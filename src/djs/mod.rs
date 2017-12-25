@@ -3,7 +3,7 @@ pub mod config;
 pub mod rc;
 pub mod jenkins;
 pub mod mediator;
-pub mod progressbar;
+pub mod console;
 pub mod download;
 
 mod defaults;

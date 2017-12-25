@@ -70,13 +70,9 @@ impl Default for Config {
 
 
 pub fn validate_config(config : &Config) -> Result<(), String> {
-    /*
-    if config.solution.is_none() {
-       return Err(String::from("solution is required"));
+    if config.is_destination_a_dir() && !config.is_destination_writable() {
+        return Err(format!("The destination directory {} is not writable.", config.destination));
     }
-    if config.solutionpath.is_none() {
-       return Err(String::from("solutionpath is required"));
-    }
-    */
+
     Ok(())
 }

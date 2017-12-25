@@ -15,13 +15,13 @@ struct XmlElementData {
 pub fn cdata_i32<'de, R: Read>(r: R) -> Result<i32, String> {
     cdata_string(r)
         .and_then(|it| it.parse::<i32>()
-        .map_err(|pie| String::from("Unable to parse i32")))
+        .map_err(|_| String::from("Unable to parse i32")))
 }
 
 pub fn cdata_string<'de, R: Read>(r: R) -> Result<String, String> {
     let x : Result<XmlElementData, self::serde_xml_rs::Error> = deserialize(r);
     debug!("XML Element Data = {:?}", x);
 
-    x.map_err(|e| String::from("Unable to deserialize xml data."))
+    x.map_err(|_| String::from("Unable to deserialize xml data."))
         .map(|it| it.value)
 }

@@ -1,25 +1,14 @@
-// the point of this module is to encapsulate all the
-// jenkins information and querying, etc...
-//
-//extern crate reqwest;
-extern crate indicatif;
 extern crate console;
+use self::console::{style};
 
-// import this so e.description() works
 use reqwest;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
-use self::console::{style};
-use djs::progressbar::create_progress_bar;
 
-fn print(out: String, quiet_mode: bool) {
-    if !quiet_mode {
-        println!("{}", out.as_str());
-    }
-}
+use djs::mediator::Mediator;
 
-pub fn download(url: &str, fname: &str, quiet_mode: bool) -> Result<(), Box<::std::error::Error>> {
+pub fn download(url: &str, fname: &str, mediator: &mut Mediator) -> Result<(), Box<::std::error::Error>> {
 
     // parse url
     let client = reqwest::Client::builder()
@@ -30,7 +19,7 @@ pub fn download(url: &str, fname: &str, quiet_mode: bool) -> Result<(), Box<::st
         .header(reqwest::header::AcceptEncoding(vec![]))
         //.danger_disable_hostname_verification()
         .send().unwrap();
-    print(format!("HTTP request sent... {}", style(format!("{}", resp.status())).green()), quiet_mode);
+    mediator.print(format!("HTTP request sent... {}", style(format!("{}", resp.status())).green()));
     if resp.status().is_success() {
 
         let headers = resp.headers().clone();
@@ -43,35 +32,32 @@ pub fn download(url: &str, fname: &str, quiet_mode: bool) -> Result<(), Box<::st
 
         match ct_len {
             Some(len) => {
-                print(format!("Length: {} ({})",
+                mediator.print(format!("Length: {} ({})",
                       style(len).green(),
-                      style(format!("{}", /*HumanBytes(*/len/*)*/)).red()),
-                    quiet_mode);
+                      style(format!("{}", mediator.human_bytes(len))).red()));
             },
             None => {
-                print(format!("Length: {}", style("unknown").red()), quiet_mode);
+                mediator.print(format!("Length: {}", style("unknown").red()));
             },
         }
 
-        print(format!("Type: {}", style(ct_type).green()), quiet_mode);
-        print(format!("Saving to: {}", style(fname).green()), quiet_mode);
+        mediator.print(format!("Saving to: {}", style(fname).green()));
 
-        let bar = create_progress_bar(quiet_mode, fname, ct_len);
+        mediator.start_progress(fname, ct_len);
 
         let mut file = File::create(fname)?;
 
         let mut buffer = [0; 8192];
-        let mut bcount: usize = 0;
+        let mut bcount: usize;
         loop {
             bcount = resp.read(&mut buffer)?;
             if bcount == 0 {
                 break;
             }
-
-            bar.inc(bcount as u64);
+            mediator.incr_progress(fname, bcount as u64);
             file.write_all(&buffer[..bcount])?;
         }
-        bar.finish();
+        mediator.finish_progress(fname);
     }
     Ok(())
 }

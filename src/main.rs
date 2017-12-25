@@ -7,6 +7,8 @@ extern crate reqwest;
 
 mod djs;
 
+use djs::download::download;
+use djs::console::ConsoleMediator;
 use std::io::{stderr, Write};
 use std::process::{exit};
 use djs::config::{Config, validate_config};
@@ -16,15 +18,16 @@ use djs::jenkins::Jenkins;
 
 
 fn main() {
+    #![allow(unused_must_use)]
     env_logger::init();
     let cli = build_cli();
 	let opts = cli.get_matches();
     let mut c = Config {..Default::default()};
+    let mut mediator = ConsoleMediator::new();
     debug!("Start State, c = {:?}", c);
 
     // read from file
     // override from command line
-    //c.solution = Some(String::from("Discover"));
 
     configure_from_file(&mut c).expect("Failed to configure from the file.");
     debug!("About to configure from CLI");
@@ -36,16 +39,25 @@ fn main() {
         exit(1)
     }
 
+    let destination_path = c.destination_path().clone();
     let mut j = Jenkins::new(&mut c);
     debug!("Jenkins = {:?}", j);
 
-    if let Some(err) = j.download().err() {
-        writeln!(stderr(), "{:?}", err).unwrap();
-        exit(1)
-    }
+    let download_result = j.resolve_download_url()
+        .and_then(|url| {
+            download(url.as_str(), destination_path.as_str(), &mut mediator)
+                .map_err(|e| String::from(e.description()))
+        });
 
-    /*println!("Download {url} to {d}",
-             url = j.download_url(),
-             d = c.destination_path());*/
-    exit(0)
+    match download_result {
+        Err(err) => {
+            writeln!(stderr(), "{:?}", err).unwrap();
+            exit(1)
+        },
+        Ok(_) => {
+            println!("Done");
+            exit(0)
+        }
+    }
 }
+

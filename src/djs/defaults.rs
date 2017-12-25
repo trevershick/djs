@@ -7,6 +7,6 @@ pub const DEFAULT_PROJECT : &'static str = "discover";
 pub const DEFAULT_BRANCH : &'static str = "master";
 pub const DEFAULT_BUILD : &'static str = "lastSuccessfulBuild";
 
-pub const DEFAULT_SOLUTION : &'static str = "d";
+pub const DEFAULT_SOLUTION : &'static str = "d.xml";
 pub const DEFAULT_DESTINATION : &'static str = ".";
 
