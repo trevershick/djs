@@ -8,6 +8,7 @@ extern crate reqwest;
 mod djs;
 
 use djs::download::download;
+use djs::mediator::Mediator;
 use djs::console::ConsoleMediator;
 use std::io::{stderr, Write};
 use std::process::{exit};
@@ -15,7 +16,7 @@ use djs::config::{Config, validate_config};
 use djs::cli::{configure_from_cli, build_cli};
 use djs::rc::{configure_from_file};
 use djs::jenkins::Jenkins;
-
+use djs::git::guess_branch;
 
 fn main() {
     #![allow(unused_must_use)]
@@ -26,6 +27,15 @@ fn main() {
     let mut mediator = ConsoleMediator::new();
     debug!("Start State, c = {:?}", c);
 
+
+    // start from the default config
+    // then 'guess' the git branch
+    //   if it's specfiied in the file or local .rc file then we ignore the branch
+    //
+    if let Some(git_branch) = guess_branch() {
+        debug!("Guessed git branch is {:?}", git_branch);
+        c.branch = git_branch;
+    }
     // read from file
     // override from command line
 
@@ -40,13 +50,20 @@ fn main() {
     }
 
     let destination_path = c.destination_path().clone();
+    let dry_run = c.dry_run;
     let mut j = Jenkins::new(&mut c);
     debug!("Jenkins = {:?}", j);
 
     let download_result = j.resolve_download_url()
         .and_then(|url| {
-            download(url.as_str(), destination_path.as_str(), &mut mediator)
-                .map_err(|e| String::from(e.description()))
+            mediator.print(format!("Resolved URL: {}", url));
+            if !dry_run {
+                download(url.as_str(), destination_path.as_str(), &mut mediator)
+                    .map_err(|e| String::from(e.description()))
+            } else {
+                mediator.print("Dry Run, not downloading the file.");
+                Ok(())
+            }
         });
 
     match download_result {

@@ -12,7 +12,8 @@ pub struct Config {
     pub build: String,
 
     pub solution: String,
-    pub destination: String
+    pub destination: String,
+    pub dry_run: bool
 }
 
 impl Config {
@@ -63,7 +64,9 @@ impl Default for Config {
             build: String::from(DEFAULT_BUILD),
 
             solution: String::from(DEFAULT_SOLUTION),
-            destination: String::from(DEFAULT_DESTINATION)
+            destination: String::from(DEFAULT_DESTINATION),
+
+            dry_run: false
         }
     }
 }

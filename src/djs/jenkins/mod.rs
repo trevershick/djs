@@ -84,9 +84,6 @@ impl<'a> Jenkins<'a> {
         get(url).and_then(&cdata_i32)
     }
 
-
-
-
     /// given a build number and the current config, find the relative path to the artifact
     fn find_artifact_path(&self, build_num : i32) -> Result<String, String> {
         let c = self.config();

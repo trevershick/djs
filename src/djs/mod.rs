@@ -5,5 +5,6 @@ pub mod jenkins;
 pub mod mediator;
 pub mod console;
 pub mod download;
+pub mod git;
 
 mod defaults;

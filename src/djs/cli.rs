@@ -24,6 +24,10 @@ pub fn configure_from_cli(c : &mut Config, opts: &ArgMatches) -> Result<(), Stri
     set_config!(c, opts, build);
     set_config!(c, opts, solution);
     set_config!(c, opts, destination);
+
+    if opts.is_present("dry_run") {
+        c.dry_run = true;
+    }
     Ok(())
 }
 
@@ -75,9 +79,8 @@ pub fn build_cli() -> App<'static, 'static> {
             .default_value(DEFAULT_SOLUTION)
             .help("Sets the branch to download")
             .takes_value(true))
-        .arg(Arg::with_name("dryrun")
+        .arg(Arg::with_name("dry_run")
             .short("n")
-            .long("dryrun")
             .help("If set to true, nothing will be downloaded."))
         .arg(Arg::with_name("v")
             .short("v")

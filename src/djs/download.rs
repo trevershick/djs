@@ -28,8 +28,6 @@ pub fn download(url: &str, fname: &str, mediator: &mut Mediator) -> Result<(), B
         let ct_len = headers.get::<reqwest::header::ContentLength>().map(|it| it.0);
         debug!("ct_len = {:?}", ct_len);
 
-        let ct_type = headers.get::<reqwest::header::ContentType>().unwrap();
-
         match ct_len {
             Some(len) => {
                 mediator.print(format!("Length: {} ({})",
