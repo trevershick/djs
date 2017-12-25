@@ -8,10 +8,8 @@ use djs::defaults::*;
 
 macro_rules! set_config {
     ($config: ident, $opts:ident, $option: ident) => {
-        debug!("Inside Macro {:?}", stringify!($option));
-        debug!("   {:?}", $opts.value_of(stringify!($option)));
         if let Some(v) = $opts.value_of(stringify!($option)) {
-            debug!("Setting CLI Option $option to {}", v);
+            debug!(" cli option {} = {}", stringify!($option), v);
             $config.$option = String::from(v);
         }
     }
@@ -25,6 +23,7 @@ pub fn configure_from_cli(c : &mut Config, opts: &ArgMatches) -> Result<(), Stri
     set_config!(c, opts, branch);
     set_config!(c, opts, build);
     set_config!(c, opts, solution);
+    set_config!(c, opts, destination);
     Ok(())
 }
 

@@ -3,6 +3,7 @@
 extern crate env_logger;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate clap;
+extern crate reqwest;
 
 mod djs;
 

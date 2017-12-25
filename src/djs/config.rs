@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use djs::defaults::*;
+use std::fs;
 
 #[derive(Debug)]
 pub struct Config {
@@ -15,18 +16,40 @@ pub struct Config {
 }
 
 impl Config {
-    fn merge(&mut self, with: &Config) {
-        self.url = with.url.clone();
+    fn is_destination_a_dir(&self) -> bool {
+        match fs::metadata(self.destination.clone()) {
+            Ok(m) => m.is_dir(),
+            Err(_) => false
+        }
+    }
+
+    fn is_destination_writable(&self) -> bool {
+        match fs::metadata(self.destination.clone()) {
+            Ok(m) => m.permissions().readonly(),
+            Err(_) => true
+        }
     }
 
     pub fn destination_path(&self) -> String {
-        format!("{destination}/{branch}-{build}-{project}.xml",
+        // if the destination is a dir, then we build it
+        // if the destination is a filename return it
+        let default_dest = format!("{destination}/{branch}-{build}-{project}.xml",
                 destination = self.destination,
                 branch = self.branch,
                 build = self.build,
-                project = self.project)
-    }
+                project = self.project);
 
+        let dest_is_dir = match fs::metadata(self.destination.clone()) {
+            Ok(meta) => meta.is_dir() && !meta.permissions().readonly(),
+            Err(_) => false
+        };
+
+        if dest_is_dir {
+            default_dest
+        } else {
+            self.destination.clone()
+        }
+    }
 }
 
 impl Default for Config {
