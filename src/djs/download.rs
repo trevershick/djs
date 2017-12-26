@@ -1,5 +1,4 @@
-extern crate console;
-use self::console::{style};
+use console::{style};
 
 use reqwest;
 use std::fs::File;

@@ -3,24 +3,31 @@ use djs::mediator::Mediator;
 extern crate indicatif;
 extern crate console;
 
+use djs::config::Config;
 use self::indicatif::{ProgressBar, ProgressStyle, HumanBytes};
 
-#[derive(Default)]
-pub struct ConsoleMediator {
+pub struct ConsoleMediator<'a> {
+    config: &'a Config,
     progress_bar : Option<ProgressBar>
 }
 
-impl ConsoleMediator {
-    pub fn new() -> ConsoleMediator {
-        ConsoleMediator { ..Default::default() }
+impl<'a> ConsoleMediator<'a> {
+    pub fn new(config: &'a Config) -> ConsoleMediator {
+        ConsoleMediator { config: config, progress_bar: None }
     }
 }
 
-impl Mediator for ConsoleMediator {
+
+impl<'a> Mediator for ConsoleMediator<'a> {
     fn print(&self, out: String) {
-        println!("{}", out);
+        if !self.config.quiet.get() {
+            println!("{}", out);
+        }
     }
     fn start_progress(&mut self, name: &str, total_value: Option<u64>) {
+        if self.config.quiet.get() {
+            return
+        }
         if self.progress_bar.is_some() {
             panic!("The progress bar has already been setup!!!");
         }
@@ -28,12 +35,18 @@ impl Mediator for ConsoleMediator {
     }
 
     fn incr_progress(&mut self, _name: &str, incr_by: u64) {
+        if self.config.quiet.get() {
+            return
+        }
         if let Some(ref mut b) = self.progress_bar {
             b.inc(incr_by);
         }
     }
 
     fn finish_progress(&mut self, _name: &str) {
+        if self.config.quiet.get() {
+            return
+        }
         if let Some(ref mut b) = self.progress_bar {
             b.finish();
         }

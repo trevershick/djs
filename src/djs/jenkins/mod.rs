@@ -14,7 +14,7 @@ use djs::jenkins::xml::{cdata_i32, cdata_string};
 
 #[derive(Debug)]
 pub struct Jenkins<'a> {
-    pub config : &'a mut Config,
+    config : &'a mut Config,
     resolved_download_url : Option<String>
 }
 
@@ -43,29 +43,28 @@ fn string_from_response_err(it: reqwest::Error) -> String {
 }
 
 impl<'a> Jenkins<'a> {
-    pub fn new(config: &mut Config) -> Jenkins {
+    pub fn new(config: &'a mut Config) -> Jenkins<'a> {
         Jenkins { config: config, resolved_download_url: None }
     }
 
     fn config(&self) -> &Config {
-        // this is unsafe but i want to panic if this is not set
         self.config
     }
 
 
     fn build_number_for_last_keep(&self) -> Result<i32, String> {
-        debug!("build_number_for_last_keep, build={:?}", self.config().build);
+        debug!("build_number_for_last_keep, build={:?}", self.config().build.get());
 
         let c = self.config();
         let url = format!("{url}/{base}/job/{project}/job/{branch}/api/xml?depth=2&tree=builds[number,keepLog]&xpath=/*/build[keepLog=%22true%22][1]/number",
-                url = c.url,
-                base = c.base,
-                project = c.project,
-                branch = c.branch);
+                url = c.url.get(),
+                base = c.base.get(),
+                project = c.project.get(),
+                branch = c.branch.get());
 
         debug!("  url={}", url);
 
-        get(url).and_then(&cdata_i32)
+        get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the last \"keep forever\" build\n{}", e))
     }
 
 
@@ -74,26 +73,26 @@ impl<'a> Jenkins<'a> {
 
         let c = self.config();
         let url = format!("{url}/{base}/job/{project}/job/{branch}/lastSuccessfulBuild/api/xml?xpath=/*/number",
-                url = c.url,
-                base = c.base,
-                project = c.project,
-                branch = c.branch);
+                url = c.url.get(),
+                base = c.base.get(),
+                project = c.project.get(),
+                branch = c.branch.get());
 
         debug!("  url={}", url);
 
-        get(url).and_then(&cdata_i32)
+        get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the last successful build\n{}", e))
     }
 
     /// given a build number and the current config, find the relative path to the artifact
     fn find_artifact_path(&self, build_num : i32) -> Result<String, String> {
         let c = self.config();
         let url = format!("{url}/{base}/job/{project}/job/{branch}/{buildnumber}/api/xml?xpath=/*/artifact[fileName=%22{solution}%22]/relativePath",
-                url = c.url,
-                base = c.base,
-                project = c.project,
-                branch = c.branch,
+                url = c.url.get(),
+                base = c.base.get(),
+                project = c.project.get(),
+                branch = c.branch.get(),
                 buildnumber = build_num,
-                solution = c.solution);
+                solution = c.solution.get());
 
         debug!("Downloading {}", url);
 
@@ -114,7 +113,8 @@ impl<'a> Jenkins<'a> {
         };
 
         debug!("Update configuration with build number {:?}", bn);
-        self.config.build = bn.to_string();
+        let src = self.config.build.source();
+        self.config.build.set(bn.to_string(), src);
 
         let relative_path_to_artifact = self.find_artifact_path(bn);
         if relative_path_to_artifact.is_err() {
@@ -125,11 +125,11 @@ impl<'a> Jenkins<'a> {
         debug!("Artifact path is {}", rel_path);
 
         let tmp = format!("{url}/{base}/job/{project}/job/{branch}/{build}/artifact/{a}",
-                url = self.config().url,
-                base = self.config().base,
-                project = self.config().project,
-                branch = self.config().branch,
-                build = self.config().build,
+                url = self.config().url.get(),
+                base = self.config().base.get(),
+                project = self.config().project.get(),
+                branch = self.config().branch.get(),
+                build = self.config().build.get(),
                 a = rel_path);
         debug!("Resolved URL is {}", tmp);
 
@@ -141,7 +141,7 @@ impl<'a> Jenkins<'a> {
     /// if it's not return an error
     fn build_number_from_build(&self) -> Result<i32, String> {
         debug!("build_number_from_build, build={:?}", self.config().build);
-        match self.config().build.parse::<i32>() {
+        match self.config().build.get().parse::<i32>() {
             Ok(num) => Ok(num),
             Err(_) => Err(format!("{build} is not a valid integer.", build = self.config().build))
         }
@@ -151,7 +151,7 @@ impl<'a> Jenkins<'a> {
     // 'lastSuccessful' build or a number as a string
     fn resolve_build_number(&self) -> Result<i32, String> {
         debug!("resolve_build_number, build={:?}", self.config().build);
-        match self.config().build.as_ref() {
+        match self.config().build.get().as_ref() {
             "lastSuccessfulBuild" => self.build_number_for_last_successful(),
             "lastKeepForever" => self.build_number_for_last_keep(),
             _ => self.build_number_from_build()
