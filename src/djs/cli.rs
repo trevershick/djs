@@ -4,7 +4,8 @@ use djs::config::Config;
 
 #[allow(unused_imports)]
 use djs::defaults::*;
-
+use std::rc::Rc;
+use std::cell::RefCell;
 
 macro_rules! set_config {
     ($config: ident, $opts:ident, $option: ident, $arg: expr) => {
@@ -15,8 +16,9 @@ macro_rules! set_config {
     }
 }
 
-pub fn configure_from_cli(c : &mut Config, opts: &ArgMatches) -> Result<(), String> {
+pub fn configure_from_cli(config : Rc<RefCell<Config>>, opts: &ArgMatches) -> Result<(), String> {
     debug!("configure_from_cli");
+    let mut c = config.borrow_mut();
     set_config!(c, opts, url, "-u");
     set_config!(c, opts, base, "-e");
     set_config!(c, opts, project, "-p");

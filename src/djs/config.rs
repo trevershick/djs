@@ -2,6 +2,8 @@
 use djs::defaults::*;
 use std::fs;
 use std;
+use std::rc::Rc;
+use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Clone)]
@@ -107,9 +109,10 @@ impl Default for Config {
 }
 
 
-pub fn validate_config(config : &Config) -> Result<(), String> {
-    if config.is_destination_a_dir() && !config.is_destination_writable() {
-        return Err(format!("The destination directory {} is not writable.", config.destination.get()));
+pub fn validate_config(config : Rc<RefCell<Config>>) -> Result<(), String> {
+    let c = config.borrow();
+    if c.is_destination_a_dir() && !c.is_destination_writable() {
+        return Err(format!("The destination directory {} is not writable.", c.destination.get()));
     }
 
     Ok(())

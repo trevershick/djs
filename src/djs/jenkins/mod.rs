@@ -11,10 +11,12 @@ use reqwest;
 use std::error::Error;
 use djs::config::Config;
 use djs::jenkins::xml::{cdata_i32, cdata_string};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Debug)]
-pub struct Jenkins<'a> {
-    config : &'a mut Config,
+pub struct Jenkins {
+    config : Rc<RefCell<Config>>,
     resolved_download_url : Option<String>
 }
 
@@ -42,20 +44,15 @@ fn string_from_response_err(it: reqwest::Error) -> String {
     String::from(it.description())
 }
 
-impl<'a> Jenkins<'a> {
-    pub fn new(config: &'a mut Config) -> Jenkins<'a> {
+impl Jenkins {
+    pub fn new(config: Rc<RefCell<Config>>) -> Jenkins {
         Jenkins { config: config, resolved_download_url: None }
     }
 
-    fn config(&self) -> &Config {
-        self.config
-    }
-
-
     fn build_number_for_last_keep(&self) -> Result<i32, String> {
-        debug!("build_number_for_last_keep, build={:?}", self.config().build.get());
+        debug!("build_number_for_last_keep, build={:?}", self.config.borrow().build.get());
 
-        let c = self.config();
+        let c = self.config.borrow();
         let url = format!("{url}/{base}/job/{project}/job/{branch}/api/xml?depth=2&tree=builds[number,keepLog]&xpath=/*/build[keepLog=%22true%22][1]/number",
                 url = c.url.get(),
                 base = c.base.get(),
@@ -69,9 +66,9 @@ impl<'a> Jenkins<'a> {
 
 
     fn build_number_for_last_successful(&self) -> Result<i32, String> {
-        debug!("build_number_for_last_successful, build={:?}", self.config().build);
+        debug!("build_number_for_last_successful, build={:?}", self.config.borrow().build);
 
-        let c = self.config();
+        let c = self.config.borrow();
         let url = format!("{url}/{base}/job/{project}/job/{branch}/lastSuccessfulBuild/api/xml?xpath=/*/number",
                 url = c.url.get(),
                 base = c.base.get(),
@@ -85,7 +82,7 @@ impl<'a> Jenkins<'a> {
 
     /// given a build number and the current config, find the relative path to the artifact
     fn find_artifact_path(&self, build_num : i32) -> Result<String, String> {
-        let c = self.config();
+        let c = self.config.borrow();
         let url = format!("{url}/{base}/job/{project}/job/{branch}/{buildnumber}/api/xml?xpath=/*/artifact[fileName=%22{solution}%22]/relativePath",
                 url = c.url.get(),
                 base = c.base.get(),
@@ -97,6 +94,16 @@ impl<'a> Jenkins<'a> {
         debug!("Downloading {}", url);
 
         get(url).and_then(&cdata_string)
+    }
+
+    fn update_build_with(&self, bn: i32) {
+        debug!("Update configuration with build number {:?}", bn);
+        let old_build_number = self.config.borrow().build.get();
+
+        let mut src = self.config.borrow().build.source();
+        src = format!("jenkins, was {} from {}", old_build_number, src);
+
+        self.config.borrow_mut().build.set(bn.to_string(), src);
     }
 
     pub fn resolve_download_url(&mut self) -> Result<String, String> {
@@ -112,9 +119,6 @@ impl<'a> Jenkins<'a> {
             Err(x) => return Err(x)
         };
 
-        debug!("Update configuration with build number {:?}", bn);
-        let src = self.config.build.source();
-        self.config.build.set(bn.to_string(), src);
 
         let relative_path_to_artifact = self.find_artifact_path(bn);
         if relative_path_to_artifact.is_err() {
@@ -125,11 +129,11 @@ impl<'a> Jenkins<'a> {
         debug!("Artifact path is {}", rel_path);
 
         let tmp = format!("{url}/{base}/job/{project}/job/{branch}/{build}/artifact/{a}",
-                url = self.config().url.get(),
-                base = self.config().base.get(),
-                project = self.config().project.get(),
-                branch = self.config().branch.get(),
-                build = self.config().build.get(),
+                url = self.config.borrow().url.get(),
+                base = self.config.borrow().base.get(),
+                project = self.config.borrow().project.get(),
+                branch = self.config.borrow().branch.get(),
+                build = self.config.borrow().build.get(),
                 a = rel_path);
         debug!("Resolved URL is {}", tmp);
 
@@ -140,20 +144,31 @@ impl<'a> Jenkins<'a> {
     /// Expecting the config.build number to be an integer (build number)
     /// if it's not return an error
     fn build_number_from_build(&self) -> Result<i32, String> {
-        debug!("build_number_from_build, build={:?}", self.config().build);
-        match self.config().build.get().parse::<i32>() {
+        debug!("build_number_from_build, build={:?}", self.config.borrow().build);
+        match self.config.borrow().build.get().parse::<i32>() {
             Ok(num) => Ok(num),
-            Err(_) => Err(format!("{build} is not a valid integer.", build = self.config().build))
+            Err(_) => Err(format!("{build} is not a valid integer.", build = self.config.borrow().build))
         }
     }
 
     // entry point. return an int build number from either a
     // 'lastSuccessful' build or a number as a string
     fn resolve_build_number(&self) -> Result<i32, String> {
-        debug!("resolve_build_number, build={:?}", self.config().build);
-        match self.config().build.get().as_ref() {
-            "lastSuccessfulBuild" => self.build_number_for_last_successful(),
-            "lastKeepForever" => self.build_number_for_last_keep(),
+        debug!("resolve_build_number, build={:?}", self.config.borrow().build);
+        let x = self.config.borrow().build.get();
+        match x.as_ref() {
+            "lastSuccessfulBuild" => {
+                self.build_number_for_last_successful().and_then(|bn| {
+                    self.update_build_with(bn);
+                    Ok(bn)
+                })
+            },
+            "lastKeepForever" => {
+                self.build_number_for_last_keep().and_then(|bn| {
+                    self.update_build_with(bn);
+                    Ok(bn)
+                })
+            },
             _ => self.build_number_from_build()
         }
     }

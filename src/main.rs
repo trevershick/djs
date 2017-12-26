@@ -21,6 +21,8 @@ use djs::rc::{configure_from_file};
 use djs::jenkins::Jenkins;
 use djs::git::guess_branch;
 use std::path::Path;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 macro_rules! dump_config {
     ($mediator:ident, $config: ident, $title:expr, $opt:ident) => {
@@ -38,15 +40,15 @@ fn main() {
     env_logger::init();
     let cli = build_cli();
 	let opts = cli.get_matches();
-    let mut c = Config {..Default::default()};
+    let config = Rc::new(RefCell::new(Config {..Default::default()}));
 
-    debug!("initial config={:?}", c);
+    debug!("initial config={:?}", config.borrow());
 
     if let Some(mut home_pb) = home_dir() {
         home_pb.push(".djsrc");
-        configure_from_file(home_pb.as_path(), &mut c);
+        configure_from_file(home_pb.as_path(), Rc::clone(&config));
     }
-    configure_from_file(Path::new("./.djsrc"), &mut c);
+    configure_from_file(Path::new("./.djsrc"), Rc::clone(&config));
 
     // start from the default config
     // then 'guess' the git branch
@@ -54,34 +56,31 @@ fn main() {
     //
     if let Some(git_branch) = guess_branch() {
         debug!("Guessed git branch is {:?}", git_branch);
-        c.branch.set(git_branch, String::from("git"));
+        config.borrow_mut().branch.set(git_branch, String::from("git"));
     }
     // read from file
     // override from command line
 
 
     debug!("About to configure from CLI");
-    configure_from_cli(&mut c, &opts).expect("Failed to parse the CLI");
+    configure_from_cli(Rc::clone(&config), &opts).expect("Failed to parse the CLI");
 
 
-    if let Some(err) = validate_config(&c).err() {
+    if let Some(err) = validate_config(Rc::clone(&config)).err() {
         writeln!(stderr(), "{:?}", err).unwrap();
         exit(1)
     }
 
-    let destination_path = c.destination_path().clone();
-    let dry_run = c.dry_run.get();
-    let verbose = c.verbose.get();
-
     // i don't like this.  the mediator only needs to read from the config
     // while the jenkins struct needs to modify it
-    let config_snapshot = c.clone();
-    let mut mediator = ConsoleMediator::new(&config_snapshot);
+    let mut mediator = ConsoleMediator::new(Rc::clone(&config));
 
-    let mut j = Jenkins::new(&mut c);
+    let mut j = Jenkins::new(Rc::clone(&config));
     debug!("Jenkins = {:?}", j);
 
-    if verbose {
+    let resolved_url = j.resolve_download_url();
+    if config.borrow().verbose.get() {
+        let config_snapshot = config.borrow();
        dump_config!(mediator, config_snapshot,"Jenkins Base URL", url);
        dump_config!(mediator, config_snapshot,"Jenkins Base Path", base);
        dump_config!(mediator, config_snapshot,"Project", project);
@@ -91,10 +90,11 @@ fn main() {
        dump_config!(mediator, config_snapshot,"Destination", destination);
     }
 
-    let download_result = j.resolve_download_url()
-        .and_then(|url| {
+    let download_result = resolved_url.and_then(|url| {
             mediator.print(format!("Resolved URL: {}", style(url.as_str()).green()));
-            if !dry_run {
+            if !config.borrow().dry_run.get() {
+                let destination_path = config.borrow().destination_path();
+
                 download(url.as_str(), destination_path.as_str(), &mut mediator)
                     .map_err(|e| String::from(e.description()))
             } else {

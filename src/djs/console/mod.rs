@@ -5,27 +5,29 @@ extern crate console;
 
 use djs::config::Config;
 use self::indicatif::{ProgressBar, ProgressStyle, HumanBytes};
+use std::rc::Rc;
+use std::cell::RefCell;
 
-pub struct ConsoleMediator<'a> {
-    config: &'a Config,
+pub struct ConsoleMediator {
+    config: Rc<RefCell<Config>>,
     progress_bar : Option<ProgressBar>
 }
 
-impl<'a> ConsoleMediator<'a> {
-    pub fn new(config: &'a Config) -> ConsoleMediator {
+impl ConsoleMediator {
+    pub fn new(config: Rc<RefCell<Config>>) -> ConsoleMediator {
         ConsoleMediator { config: config, progress_bar: None }
     }
 }
 
 
-impl<'a> Mediator for ConsoleMediator<'a> {
+impl Mediator for ConsoleMediator {
     fn print(&self, out: String) {
-        if !self.config.quiet.get() {
+        if !(*self.config.borrow()).quiet.get() {
             println!("{}", out);
         }
     }
     fn start_progress(&mut self, name: &str, total_value: Option<u64>) {
-        if self.config.quiet.get() {
+        if self.config.borrow().quiet.get() {
             return
         }
         if self.progress_bar.is_some() {
@@ -35,7 +37,7 @@ impl<'a> Mediator for ConsoleMediator<'a> {
     }
 
     fn incr_progress(&mut self, _name: &str, incr_by: u64) {
-        if self.config.quiet.get() {
+        if self.config.borrow().quiet.get() {
             return
         }
         if let Some(ref mut b) = self.progress_bar {
@@ -44,7 +46,7 @@ impl<'a> Mediator for ConsoleMediator<'a> {
     }
 
     fn finish_progress(&mut self, _name: &str) {
-        if self.config.quiet.get() {
+        if self.config.borrow().quiet.get() {
             return
         }
         if let Some(ref mut b) = self.progress_bar {

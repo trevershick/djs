@@ -2,6 +2,8 @@ extern crate configuration;
 
 use djs::config::{Config};
 use std;
+use std::rc::Rc;
+use std::cell::RefCell;
 use std::path::Path;
 use self::configuration::format::TOML;
 
@@ -9,12 +11,12 @@ macro_rules! set_config {
     ($config: ident, $tree: ident, $option: ident, $source: ident) => {
         if let Some(v) = $tree.get::<String>(stringify!($option)) {
             debug!("  tree option {} = {}", stringify!($option), v);
-            $config.$option.set(v.clone(), $source.to_string());
+            $config.borrow_mut().$option.set(v.clone(), $source.to_string());
         }
     }
 }
 
-pub fn configure_from_file(p: &Path, config: &mut Config) -> Result<(), Box<std::error::Error>> {
+pub fn configure_from_file(p: &Path, config: Rc<RefCell<Config>>) -> Result<(), Box<std::error::Error>> {
 
     debug!("configure_from_file, p={:?}", p);
     if let Ok(tree) = TOML::open(p) {
