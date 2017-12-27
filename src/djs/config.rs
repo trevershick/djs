@@ -1,11 +1,15 @@
 #[allow(unused_imports)]
+
+extern crate url;
+
+use self::url::{Url, ParseError};
 use djs::defaults::*;
 use std::fs;
-use std;
 use std::path::Path;
 use std::rc::Rc;
 use std::cell::RefCell;
-use std::fmt::{Display, Formatter};
+use std::fmt::{self, Display, Formatter};
+use djs::DjsError;
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -31,7 +35,7 @@ pub struct ConfigValue<T: Clone> {
 }
 
 impl Display for ConfigValue<String> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         write!(f, "{} [from {}]", self.get(), self.source())
     }
 }
@@ -150,12 +154,36 @@ impl Default for Config {
 }
 
 
-pub fn validate_config(config : Rc<RefCell<Config>>) -> Result<(), String> {
-    let c = config.borrow();
-    if c.is_destination_a_dir() && !c.is_destination_writable() {
-        return Err(format!("The destination directory {} is not writable.", c.destination.get()));
+
+pub fn validate_config(config : Rc<RefCell<Config>>) -> Result<(), DjsError> {
+    macro_rules! reject_if_blank {
+        ($o: ident) => {
+            if config.borrow().$o.get().replace(char::is_whitespace, "").len() == 0 {
+                return Err(DjsError::InvalidConfig(format!("{}", stringify!($o)),
+                                           config.borrow().$o.get(),
+                                           format!("It is blank.")));
+            }
+        }
     }
-    // TODO - lots more validation here, URL formats,etc...
+
+    reject_if_blank!(url);
+    reject_if_blank!(project);
+    reject_if_blank!(branch);
+    reject_if_blank!(build);
+    reject_if_blank!(solution);
+    reject_if_blank!(destination);
+
+    let c = config.borrow();
+
+    if Url::parse(c.url.get().as_ref()).is_err() {
+        return Err(DjsError::InvalidConfig("url".to_string(), c.url.get(), "Fix the URL".to_string()));
+    }
+
+    if c.is_destination_a_dir() && !c.is_destination_writable() {
+        return Err(DjsError::InvalidConfig("description".to_string(),
+                                           c.destination.get(),
+                                           "The destination directory is not writable.".to_string()));
+    }
 
     Ok(())
 }

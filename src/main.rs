@@ -19,7 +19,7 @@ use std::process::{exit};
 use console::{style};
 use djs::download::download;
 use djs::mediator::Mediator;
-use djs::console::ConsoleMediator;
+use djs::consolemed::ConsoleMediator;
 use djs::config::{Config, validate_config};
 use djs::cli::{configure_from_cli, build_cli};
 use djs::rc::{configure_from_file};
@@ -64,7 +64,7 @@ fn main() {
 
 
     if let Some(err) = validate_config(Rc::clone(&config)).err() {
-        writeln!(stderr(), "{:?}", err).unwrap();
+        writeln!(stderr(), "Error: {}", err).unwrap();
         exit(1)
     }
 
