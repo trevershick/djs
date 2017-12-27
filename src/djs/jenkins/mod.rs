@@ -53,7 +53,7 @@ impl Jenkins {
         debug!("build_number_for_last_keep, build={:?}", self.config.borrow().build.get());
 
         let c = self.config.borrow();
-        let url = format!("{url}/{base}/job/{project}/job/{branch}/api/xml?depth=2&tree=builds[number,keepLog]&xpath=/*/build[keepLog=%22true%22][1]/number",
+        let url = format!("{url}/{base}/job/{project}/job/{branch}/api/xml?depth=2&tree=builds[number,keepLog]&xpath=/*/build[keepLog=%22true%22][1]/number&wrapper=x",
                 url = c.url.get(),
                 base = c.base.get(),
                 project = c.project.get(),
@@ -65,32 +65,54 @@ impl Jenkins {
     }
 
 
-    fn build_number_for_last_successful(&self) -> Result<i32, String> {
-        debug!("build_number_for_last_successful, build={:?}", self.config.borrow().build);
+    fn build_number_for_last_successful_url(&self) -> String {
+        debug!("build_number_for_last_successful_url, build={:?}", self.config.borrow().build);
 
         let c = self.config.borrow();
-        let url = format!("{url}/{base}/job/{project}/job/{branch}/lastSuccessfulBuild/api/xml?xpath=/*/number",
+        format!("{url}/{base}/job/{project}/job/{branch}/lastSuccessfulBuild/api/xml?xpath=/*/number&wrapper=x",
                 url = c.url.get(),
                 base = c.base.get(),
                 project = c.project.get(),
-                branch = c.branch.get());
+                branch = c.branch.get())
+    }
 
-        debug!("  url={}", url);
+
+    fn build_number_for_last_successful(&self) -> Result<i32, String> {
+        debug!("build_number_for_last_successful, build={:?}", self.config.borrow().build);
+        let url = self.build_number_for_last_successful_url();
 
         get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the last successful build\n{}", e))
     }
 
-    /// given a build number and the current config, find the relative path to the artifact
-    fn find_artifact_path(&self, build_num : i32) -> Result<String, String> {
+    fn find_artifact_path_url(&self, build_num : i32) -> String {
         let c = self.config.borrow();
-        let url = format!("{url}/{base}/job/{project}/job/{branch}/{buildnumber}/api/xml?xpath=/*/artifact[fileName=%22{solution}%22]/relativePath",
+
+
+        let mut q = "xpath=/*/artifact[fileName=%22".to_string();
+        q.push_str(c.solution.get().as_str());
+        q.push_str("%22");
+
+        if c.solution_filter.get().len() > 0 {
+            q.push_str(" and contains(relativePath, %22");
+            q.push_str(c.solution_filter.get().as_str());
+            q.push_str("%22)");
+        }
+
+        q.push_str("]/relativePath");
+        q.push_str("&wrapper=x");
+
+        format!("{url}/{base}/job/{project}/job/{branch}/{buildnumber}/api/xml?{q}",
                 url = c.url.get(),
                 base = c.base.get(),
                 project = c.project.get(),
                 branch = c.branch.get(),
                 buildnumber = build_num,
-                solution = c.solution.get());
+                q = q)
+    }
 
+    /// given a build number and the current config, find the relative path to the artifact
+    fn find_artifact_path(&self, build_num : i32) -> Result<String, String> {
+        let url = self.find_artifact_path_url(build_num);
         debug!("Downloading {}", url);
 
         get(url).and_then(&cdata_string)

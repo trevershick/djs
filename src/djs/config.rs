@@ -17,6 +17,7 @@ pub struct Config {
     pub build: ConfigValue<String>,
 
     pub solution: ConfigValue<String>,
+    pub solution_filter: ConfigValue<String>,
     pub destination: ConfigValue<String>,
     pub dry_run: ConfigValue<bool>,
     pub verbose: ConfigValue<bool>,
@@ -126,6 +127,8 @@ impl Default for Config {
             build: ConfigValue::new(String::from(DEFAULT_BUILD), String::from("defaults")),
 
             solution: ConfigValue::new(String::from(DEFAULT_SOLUTION), String::from("defaults")),
+            solution_filter: ConfigValue::new(String::from(DEFAULT_SOLUTION_FILTER), String::from("defaults")),
+
             destination: ConfigValue::new(String::from(DEFAULT_DESTINATION), String::from("defaults")),
 
             dry_run: ConfigValue::new(false, String::from("defaults")),

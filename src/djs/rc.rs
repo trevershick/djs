@@ -28,6 +28,7 @@ pub fn configure_from_file(p: &Path, config: Rc<RefCell<Config>>) -> Result<(), 
         set_config!(config, tree, branch, p_str);
         set_config!(config, tree, build, p_str);
         set_config!(config, tree, solution, p_str);
+        set_config!(config, tree, solution_filter, p_str);
         set_config!(config, tree, destination, p_str);
     }
 

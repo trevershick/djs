@@ -25,6 +25,7 @@ pub fn configure_from_cli(config : Rc<RefCell<Config>>, opts: &ArgMatches) -> Re
     set_config!(c, opts, branch, "-b");
     set_config!(c, opts, build, "-j");
     set_config!(c, opts, solution, "-s");
+    set_config!(c, opts, solution_filter, "-S");
     set_config!(c, opts, destination, "-d");
 
     if opts.is_present("dry_run") {
@@ -73,6 +74,11 @@ pub fn build_cli() -> App<'static, 'static> {
             .short("s")
             .long("solution")
             .value_name("SOLUTION")
+            .takes_value(true))
+        .arg(Arg::with_name("solution_filter")
+            .short("S")
+            .long("solution-filter")
+            .value_name("FILTER")
             .takes_value(true))
         .arg(Arg::with_name("destination")
             .short("d")

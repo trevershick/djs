@@ -9,4 +9,6 @@ pub const DEFAULT_BUILD : &'static str = "lastSuccessfulBuild";
 
 pub const DEFAULT_SOLUTION : &'static str = "d.xml";
 pub const DEFAULT_DESTINATION : &'static str = ".";
+pub const DEFAULT_SOLUTION_FILTER : &'static str = "";
+
 

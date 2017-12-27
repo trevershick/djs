@@ -7,6 +7,24 @@ use self::serde_xml_rs::deserialize;
 use std::io::Read;
 
 #[derive(Debug, Deserialize)]
+struct XmlCollection {
+    #[serde(rename = "number", default)]
+    pub number: Vec<XmlElementData>,
+
+    #[serde(rename = "relativePath", default)]
+    pub relative_path: Vec<XmlElementData>
+}
+
+impl XmlCollection {
+    fn only_value(&self) -> Option<String> {
+        let string_from_vec = |coll: &Vec<XmlElementData>| {
+            coll.first().map(|x| x.value.clone())
+        };
+        string_from_vec(&self.number).or(string_from_vec(&self.relative_path))
+    }
+}
+
+#[derive(Debug, Deserialize)]
 struct XmlElementData {
    #[serde(rename = "$value")]
    pub value : String
@@ -19,9 +37,16 @@ pub fn cdata_i32<'de, R: Read>(r: R) -> Result<i32, String> {
 }
 
 pub fn cdata_string<'de, R: Read>(r: R) -> Result<String, String> {
-    let x : Result<XmlElementData, self::serde_xml_rs::Error> = deserialize(r);
-    debug!("XML Element Data = {:?}", x);
+    let coll : Result<XmlCollection, self::serde_xml_rs::Error> = deserialize(r);
+    debug!("XML Collection Data = {:?}", coll);
 
-    x.map_err(|_| String::from("Unable to deserialize xml data."))
-        .map(|it| it.value)
+    let fv = coll.map(|c| c.only_value());
+
+    match fv {
+        Ok(x) => match x {
+            Some(v) => Ok(v),
+            None => Err("The Xml Collection contained no elements".to_string())
+        }
+        Err(_) => Err("Couldn't extract element from list.".to_string())
+    }
 }

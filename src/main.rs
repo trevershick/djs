@@ -24,12 +24,30 @@ use std::path::Path;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+macro_rules! dump_configm {
+    ($mediator:ident, $config: ident, $title:expr, $opt:ident) => {
+        let value = match $config.$opt().len() {
+            0 => "<empty>".to_string(),
+            _ => $config.$opt()
+        };
+        $mediator.print(format!("{} ({}): {}",
+                               $title,
+                               stringify!($opt),
+                               style(value).green(),
+                               ));
+    }
+}
+
 macro_rules! dump_config {
     ($mediator:ident, $config: ident, $title:expr, $opt:ident) => {
-       $mediator.print(format!("{} ({}): {} [source: {}]",
-                               stringify!($title),
+        let value = match $config.$opt.get().len() {
+            0 => "<empty>".to_string(),
+            _ => $config.$opt.get()
+        };
+        $mediator.print(format!("{} ({}): {} [source: {}]",
+                               $title,
                                stringify!($opt),
-                               style($config.$opt.get()).green(),
+                               style(value).green(),
                                style($config.$opt.source()).magenta(),
                                ));
     }
@@ -87,7 +105,9 @@ fn main() {
        dump_config!(mediator, config_snapshot,"Branch", branch);
        dump_config!(mediator, config_snapshot,"Build", build);
        dump_config!(mediator, config_snapshot,"Solution", solution);
+       dump_config!(mediator, config_snapshot,"Solution Filter", solution_filter);
        dump_config!(mediator, config_snapshot,"Destination", destination);
+       dump_configm!(mediator, config_snapshot,"Destination Path", destination_path);
     }
 
     let download_result = resolved_url.and_then(|url| {
