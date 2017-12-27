@@ -17,6 +17,7 @@ disable_cross_doctests() {
 
 main() {
     # disable_cross_doctests
+    export PKG_CONFIG_ALLOW_CROSS=1
     cargo build --target "${TARGET}" --verbose --all
     if [ "$(architecture)" = "amd64" ] || [ "$(architecture)" = "i386" ]; then
         cargo test --target "${TARGET}" --verbose --all
