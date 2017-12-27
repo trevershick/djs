@@ -4,10 +4,10 @@ use reqwest;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
-
+use djs::error::DjsError;
 use djs::mediator::Mediator;
 
-pub fn download(url: &str, fname: &str, mediator: &mut Mediator) -> Result<(), Box<::std::error::Error>> {
+pub fn download(url: &str, fname: &str, mediator: &mut Mediator) -> Result<(), DjsError> {
 
     // parse url
     let client = reqwest::Client::builder()
@@ -42,17 +42,23 @@ pub fn download(url: &str, fname: &str, mediator: &mut Mediator) -> Result<(), B
 
         mediator.start_progress(fname, ct_len);
 
-        let mut file = File::create(fname)?;
+        let mut file = File::create(fname)
+            .map_err(|e| DjsError::download_failure(url,fname,Box::new(e)))
+            .unwrap();
 
         let mut buffer = [0; 8192];
         let mut bcount: usize;
         loop {
-            bcount = resp.read(&mut buffer)?;
+            bcount = resp.read(&mut buffer)
+                .map_err(|e| DjsError::download_failure(url,fname,Box::new(e)))
+                .unwrap();
             if bcount == 0 {
                 break;
             }
             mediator.incr_progress(fname, bcount as u64);
-            file.write_all(&buffer[..bcount])?;
+            file.write_all(&buffer[..bcount])
+                .map_err(|e| DjsError::download_failure(url,fname,Box::new(e)))
+                .unwrap();
         }
         mediator.finish_progress(fname);
     }

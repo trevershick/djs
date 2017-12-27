@@ -95,7 +95,6 @@ fn main() {
                 let destination_path = config.borrow().destination_path();
 
                 download(url.as_str(), destination_path.as_str(), &mut mediator)
-                    .map_err(|e| String::from(e.description()))
             } else {
                 mediator.print(format!("Dry Run, not downloading the file."));
                 Ok(())

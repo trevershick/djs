@@ -5,6 +5,7 @@ extern crate serde_xml_rs;
 
 use self::serde_xml_rs::deserialize;
 use std::io::Read;
+use djs::error::DjsError;
 
 #[derive(Debug, Deserialize)]
 struct XmlCollection {
@@ -30,13 +31,13 @@ struct XmlElementData {
    pub value : String
 }
 
-pub fn cdata_i32<'de, R: Read>(r: R) -> Result<i32, String> {
+pub fn cdata_i32<'de, R: Read>(r: R) -> Result<i32, DjsError> {
     cdata_string(r)
         .and_then(|it| it.parse::<i32>()
-        .map_err(|_| String::from("Unable to parse i32")))
+        .map_err(|_| DjsError::XmlContentError("Unable to convert returned build number to a number value.".to_string())))
 }
 
-pub fn cdata_string<'de, R: Read>(r: R) -> Result<String, String> {
+pub fn cdata_string<'de, R: Read>(r: R) -> Result<String, DjsError> {
     let coll : Result<XmlCollection, self::serde_xml_rs::Error> = deserialize(r);
     debug!("XML Collection Data = {:?}", coll);
 
@@ -45,8 +46,8 @@ pub fn cdata_string<'de, R: Read>(r: R) -> Result<String, String> {
     match fv {
         Ok(x) => match x {
             Some(v) => Ok(v),
-            None => Err("The Xml Collection contained no elements".to_string())
+            None => Err(DjsError::XmlContentError("The Xml Collection contained no elements".to_string()))
         }
-        Err(_) => Err("Couldn't extract element from list.".to_string())
+        Err(_) => Err(DjsError::XmlContentError("Couldn't extract element from list.".to_string()))
     }
 }

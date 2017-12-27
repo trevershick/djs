@@ -2,14 +2,14 @@
 
 extern crate url;
 
-use self::url::{Url, ParseError};
+use self::url::{Url};
 use djs::defaults::*;
 use std::fs;
 use std::path::Path;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::fmt::{self, Display, Formatter};
-use djs::DjsError;
+use djs::error::DjsError;
 
 #[derive(Debug, Clone)]
 pub struct Config {

@@ -4,11 +4,12 @@
 //extern crate reqwest;
 extern crate indicatif;
 extern crate console;
+//
 mod xml;
 
 // import this so e.description() works
 use reqwest;
-use std::error::Error;
+use djs::error::DjsError;
 use djs::config::Config;
 use djs::jenkins::xml::{cdata_i32, cdata_string};
 use std::rc::Rc;
@@ -20,28 +21,30 @@ pub struct Jenkins {
     resolved_download_url : Option<String>
 }
 
-fn get(url: String) -> Result<reqwest::Response, String> {
+impl From<reqwest::Error> for DjsError {
+    fn from(err: reqwest::Error) -> DjsError {
+        DjsError::HttpError(err)
+    }
+}
+
+fn get(url: String) -> Result<reqwest::Response, DjsError> {
     reqwest::Client::builder().gzip(false)
         .build()
         .unwrap()
         .get(url.as_str())
         .header(reqwest::header::AcceptEncoding(vec![]))
         .send()
-        .map_err(&string_from_response_err)
+        .map_err(|e| From::from(e))
         .and_then(&successful_response_only)
 }
 
 
-fn successful_response_only(it: reqwest::Response) -> Result<reqwest::Response, String> {
+fn successful_response_only(it: reqwest::Response) -> Result<reqwest::Response, DjsError> {
     if it.status().is_success() {
         Ok(it)
     } else {
-        Err(format!("{} {:?}", it.url(), it.status()))
+        Err(DjsError::HttpRequestFailed(it.url().to_string(), format!("{}",it.status())))
     }
-}
-
-fn string_from_response_err(it: reqwest::Error) -> String {
-    String::from(it.description())
 }
 
 impl Jenkins {
@@ -49,7 +52,7 @@ impl Jenkins {
         Jenkins { config: config, resolved_download_url: None }
     }
 
-    fn build_number_for_last_keep(&self) -> Result<i32, String> {
+    fn build_number_for_last_keep(&self) -> Result<i32, DjsError> {
         debug!("build_number_for_last_keep, build={:?}", self.config.borrow().build.get());
 
         let c = self.config.borrow();
@@ -61,7 +64,10 @@ impl Jenkins {
 
         debug!("  url={}", url);
 
-        get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the last \"keep forever\" build\n{}", e))
+        get(url).and_then(&cdata_i32)
+            .map_err(|e| DjsError::step_failed(
+                    "Unable to resolve the last \"keep forever\" build",
+                    e))
     }
 
     fn build_number_for_latest_url(&self) -> String {
@@ -86,18 +92,21 @@ impl Jenkins {
                 branch = c.branch.get())
     }
 
-    fn build_number_for_latest(&self) -> Result<i32, String> {
+    fn build_number_for_latest(&self) -> Result<i32, DjsError> {
         debug!("build_number_for_latest, build={:?}", self.config.borrow().build);
         let url = self.build_number_for_latest_url();
 
-        get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the latest build\n{}", e))
+        get(url).and_then(&cdata_i32)
+            .map_err(|e| DjsError::step_failed("Unable to resolve the latest build", e))
     }
 
-    fn build_number_for_last_successful(&self) -> Result<i32, String> {
+    fn build_number_for_last_successful(&self) -> Result<i32, DjsError> {
         debug!("build_number_for_last_successful, build={:?}", self.config.borrow().build);
         let url = self.build_number_for_last_successful_url();
 
-        get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the last successful build\n{}", e))
+        get(url)
+            .and_then(&cdata_i32)
+            .map_err(|e: DjsError| DjsError::step_failed("Unable to resolve the last successful build", e))
     }
 
     fn find_artifact_path_url(&self, build_num : i32) -> String {
@@ -127,7 +136,7 @@ impl Jenkins {
     }
 
     /// given a build number and the current config, find the relative path to the artifact
-    fn find_artifact_path(&self, build_num : i32) -> Result<String, String> {
+    fn find_artifact_path(&self, build_num : i32) -> Result<String, DjsError> {
         let url = self.find_artifact_path_url(build_num);
         debug!("Downloading {}", url);
 
@@ -144,7 +153,7 @@ impl Jenkins {
         self.config.borrow_mut().build.set(bn.to_string(), src);
     }
 
-    pub fn resolve_download_url(&mut self) -> Result<String, String> {
+    pub fn resolve_download_url(&mut self) -> Result<String, DjsError> {
         if let Some(ref x) = self.resolved_download_url {
             debug!("Already resolved, returning existing url {}", x);
             return Ok(x.clone());
@@ -181,17 +190,20 @@ impl Jenkins {
 
     /// Expecting the config.build number to be an integer (build number)
     /// if it's not return an error
-    fn build_number_from_build(&self) -> Result<i32, String> {
+    fn build_number_from_build(&self) -> Result<i32, DjsError> {
         debug!("build_number_from_build, build={:?}", self.config.borrow().build);
         match self.config.borrow().build.get().parse::<i32>() {
             Ok(num) => Ok(num),
-            Err(_) => Err(format!("{build} is not a valid integer.", build = self.config.borrow().build))
+            Err(_) => Err(DjsError::InvalidConfig(
+                    format!("build"),
+                    self.config.borrow().build.get(),
+                    format!("It should be an integer value.")))
         }
     }
 
     // entry point. return an int build number from either a
     // 'lastSuccessful' build or a number as a string
-    fn resolve_build_number(&self) -> Result<i32, String> {
+    fn resolve_build_number(&self) -> Result<i32, DjsError> {
         debug!("resolve_build_number, build={:?}", self.config.borrow().build);
         let x = self.config.borrow().build.get();
         match x.as_ref() {
