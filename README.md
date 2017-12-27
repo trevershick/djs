@@ -2,8 +2,6 @@
 
 To Do
 ----
-* add 'latest' to the mix
-* 'guess' the project. it's reasonable to assume the directory that djs is being executed in is the project directory, confirm with Jenkins once guess is made
 * init the .rc file
 * change latestSuccessful and lastKeepForever to see if there are ANY builds and report on that
 * DONE a git guess in a non git folder should return None
@@ -13,8 +11,10 @@ To Do
 * cli validator
 * add tests
 
-Fixed
+Done
 ----
+* 'guess' the project. it's reasonable to assume the directory that djs is being executed in is the project directory, confirm with Jenkins once guess is made
+* add 'latest' to the mix
 * a git guess should only override defaults, notthing from a djsrc file (compare_and_set semantics with source)
 * finding artifact doesn't work when there's > 1, specifying the entire relativePath doesn't work either (build-test/package/ClientDeploy.xml)
 

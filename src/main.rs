@@ -6,52 +6,25 @@ extern crate env_logger;
 #[macro_use] extern crate clap;
 extern crate reqwest;
 
+#[macro_use]
 mod djs;
 
-use console::{style};
+use std::rc::Rc;
+use std::path::Path;
+use std::cell::RefCell;
 use std::env::home_dir;
+use std::io::{stderr, Write};
+use std::process::{exit};
+
+use console::{style};
 use djs::download::download;
 use djs::mediator::Mediator;
 use djs::console::ConsoleMediator;
-use std::io::{stderr, Write};
-use std::process::{exit};
 use djs::config::{Config, validate_config};
 use djs::cli::{configure_from_cli, build_cli};
 use djs::rc::{configure_from_file};
 use djs::jenkins::Jenkins;
-use djs::git::guess_branch;
-use std::path::Path;
-use std::rc::Rc;
-use std::cell::RefCell;
-
-macro_rules! dump_configm {
-    ($mediator:ident, $config: ident, $title:expr, $opt:ident) => {
-        let value = match $config.$opt().len() {
-            0 => "<empty>".to_string(),
-            _ => $config.$opt()
-        };
-        $mediator.print(format!("{} ({}): {}",
-                               $title,
-                               stringify!($opt),
-                               style(value).green(),
-                               ));
-    }
-}
-
-macro_rules! dump_config {
-    ($mediator:ident, $config: ident, $title:expr, $opt:ident) => {
-        let value = match $config.$opt.get().len() {
-            0 => "<empty>".to_string(),
-            _ => $config.$opt.get()
-        };
-        $mediator.print(format!("{} ({}): {} [source: {}]",
-                               $title,
-                               stringify!($opt),
-                               style(value).green(),
-                               style($config.$opt.source()).magenta(),
-                               ));
-    }
-}
+use djs::git::{guess_branch, guess_project};
 
 fn main() {
     #![allow(unused_must_use)]
@@ -71,15 +44,19 @@ fn main() {
     // start from the default config
     // then 'guess' the git branch
     //   if it's specfiied in the file or local .rc file then we ignore the branch
-    //
     if let Some(git_branch) = guess_branch() {
         debug!("Guessed git branch is {:?}", git_branch);
         // only override the value with the 'guess' if the branch value is
         // coming from defaults, not if it's from a file or command line
         config.borrow_mut().branch.set_if_source(git_branch, "git", "defaults");
     }
-    // read from file
-    // override from command line
+
+    if let Some(git_project) = guess_project() {
+        debug!("Guessed git project is {:?}", git_project);
+        // only override the value with the 'guess' if the project value is
+        // coming from defaults, not if it's from a file or command line
+        config.borrow_mut().project.set_if_source(git_project, "git", "defaults");
+    }
 
 
     debug!("About to configure from CLI");
