@@ -46,6 +46,17 @@ impl<T: Clone> ConfigValue<T> {
         self.source = source.into();
     }
 
+    ///
+    /// Set the value and the source if and only if the current source matches 'existing_source'
+    /// this can be used to only override the value if the current source is 'defaults'
+    ///
+    pub fn set_if_source<S,E>(&mut self, value: T, source: S, existing_source: E)  where S: Into<String>, E: Into<String> {
+        if self.source == existing_source.into().as_ref() {
+            self.value = value;
+            self.source = source.into();
+        }
+    }
+
     pub fn get(&self) -> T {
         self.value.clone()
     }

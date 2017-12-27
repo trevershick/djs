@@ -13,8 +13,12 @@ pub fn guess_branch() -> Option<String> {
             debug!("  r={:?}", r);
             let s = String::from_utf8_lossy(r.stdout.as_slice());
             match s.split("/").last().clone() {
-                Some(s) => return Some(String::from(s.trim())),
-                None => return None
+                // if the git branch is "" return None
+                Some(s) => match s.len() {
+                    0 => None,
+                    _ => Some(s.trim().to_string())
+                },
+                None => None
             }
         },
         Err(_) => None

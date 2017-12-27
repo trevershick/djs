@@ -64,6 +64,16 @@ impl Jenkins {
         get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the last \"keep forever\" build\n{}", e))
     }
 
+    fn build_number_for_latest_url(&self) -> String {
+        debug!("build_number_for_latest_url, build={:?}", self.config.borrow().build);
+
+        let c = self.config.borrow();
+        format!("{url}/{base}/job/{project}/job/{branch}/api/xml?xpath=/*/build/number&wrapper=x",
+                url = c.url.get(),
+                base = c.base.get(),
+                project = c.project.get(),
+                branch = c.branch.get())
+    }
 
     fn build_number_for_last_successful_url(&self) -> String {
         debug!("build_number_for_last_successful_url, build={:?}", self.config.borrow().build);
@@ -76,6 +86,12 @@ impl Jenkins {
                 branch = c.branch.get())
     }
 
+    fn build_number_for_latest(&self) -> Result<i32, String> {
+        debug!("build_number_for_latest, build={:?}", self.config.borrow().build);
+        let url = self.build_number_for_latest_url();
+
+        get(url).and_then(&cdata_i32).map_err(|e| format!("Unable to resolve the latest build\n{}", e))
+    }
 
     fn build_number_for_last_successful(&self) -> Result<i32, String> {
         debug!("build_number_for_last_successful, build={:?}", self.config.borrow().build);
@@ -179,6 +195,12 @@ impl Jenkins {
         debug!("resolve_build_number, build={:?}", self.config.borrow().build);
         let x = self.config.borrow().build.get();
         match x.as_ref() {
+            "latest" => {
+                self.build_number_for_latest().and_then(|bn| {
+                    self.update_build_with(bn);
+                    Ok(bn)
+                })
+            },
             "lastSuccessfulBuild" => {
                 self.build_number_for_last_successful().and_then(|bn| {
                     self.update_build_with(bn);

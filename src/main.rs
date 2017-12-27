@@ -74,7 +74,9 @@ fn main() {
     //
     if let Some(git_branch) = guess_branch() {
         debug!("Guessed git branch is {:?}", git_branch);
-        config.borrow_mut().branch.set(git_branch, String::from("git"));
+        // only override the value with the 'guess' if the branch value is
+        // coming from defaults, not if it's from a file or command line
+        config.borrow_mut().branch.set_if_source(git_branch, "git", "defaults");
     }
     // read from file
     // override from command line
