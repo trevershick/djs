@@ -66,6 +66,7 @@ before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
 
 install:
+  - sudo apt-get install libssl-dev
   - bash ci/install.sh
 
 script:
