@@ -17,14 +17,14 @@ disable_cross_doctests() {
 
 main() {
     # disable_cross_doctests
-    cadjso build --tadjset "${TARGET}" --verbose --all
+    cargo build --target "${TARGET}" --verbose --all
     if [ "$(architecture)" = "amd64" ] || [ "$(architecture)" = "i386" ]; then
-        cadjso test --tadjset "${TARGET}" --verbose --all
+        cargo test --target "${TARGET}" --verbose --all
         "$( dirname "${0}" )/test_complete.sh"
     fi
 
     # sanity check the file type
-    file tadjset/$TARGET/debug/djs
+    file target/$TARGET/debug/djs
 }
 
 main
