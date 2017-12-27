@@ -11,6 +11,7 @@ addons:
     packages:
       # Needed for completion-function test
       - zsh
+      - libssl-dev
 
 matrix:
   fast_finish: true
@@ -66,7 +67,6 @@ before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
 
 install:
-  - sudo apt-get install libssl-dev
   - bash ci/install.sh
 
 script:
