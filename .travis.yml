@@ -73,16 +73,16 @@ matrix:
     - os: linux
       rust: 1.22.1
       env: TARGET=x86_64-unknown-linux-gnu
-    - os: linux
-      rust: 1.22.1
-      env: TARGET=x86_64-unknown-linux-musl
-      sudo: required
-      addons:
-        apt:
-          packages: &musl_packages
-          - musl
-          - musl-dev
-          - musl-tools
+      #- os: linux
+      #- rust: 1.22.1
+      #- env: TARGET=x86_64-unknown-linux-musl
+      #- sudo: required
+      #- addons:
+      #-   apt:
+      #-     packages: &musl_packages
+      #-     - musl
+      #-     - musl-dev
+      #-     - musl-tools
       #- os: linux
       #- rust: 1.22.1
       #- env: TARGET=arm-unknown-linux-gnueabihf GCC_VERSION=4.8
