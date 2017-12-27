@@ -1,5 +1,7 @@
 # djs
 
+[![Linux build status](https://travis-ci.org/trevershick/djs.svg?branch=master)](https://travis-ci.org/trevershick/djs)
+
 To Do
 ----
 * init the .rc file
