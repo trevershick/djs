@@ -25,7 +25,7 @@ mk_tarball() {
     #cp target/$TARGET/release/build/djs-*/out/{djs.bash-completion,djs.fish,_djs.ps1} "$td/$name/complete/"
     #cp complete/_djs "$td/$name/complete/"
 
-    pushd $tg
+    pushd $td
     tar czf "$out_dir/$name.tar.gz" *
     popd
     rm -r $td
