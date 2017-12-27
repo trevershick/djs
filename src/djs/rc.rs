@@ -1,6 +1,6 @@
 extern crate configuration;
 
-use djs::config::{Config};
+use djs::config::Config;
 use std;
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -16,8 +16,10 @@ macro_rules! set_config {
     }
 }
 
-pub fn configure_from_file(p: &Path, config: Rc<RefCell<Config>>) -> Result<(), Box<std::error::Error>> {
-
+pub fn configure_from_file(
+    p: &Path,
+    config: Rc<RefCell<Config>>,
+) -> Result<(), Box<std::error::Error>> {
     debug!("configure_from_file, p={:?}", p);
     if let Ok(tree) = TOML::open(p) {
         debug!("  tree loaded");
@@ -32,12 +34,11 @@ pub fn configure_from_file(p: &Path, config: Rc<RefCell<Config>>) -> Result<(), 
         set_config!(config, tree, destination, p_str);
     }
 
-
     // load the file A
-        // if it exists,
-        //  read it in
-        //  update the config
-        // if it doesn't just return
+    // if it exists,
+    //  read it in
+    //  update the config
+    // if it doesn't just return
     Ok(())
 }
 

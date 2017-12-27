@@ -1,7 +1,5 @@
-
-use std::process::{Command};
+use std::process::Command;
 use std::env::current_dir;
-
 
 pub fn guess_project() -> Option<String> {
     // return a project only if guess_branch returns a value
@@ -9,7 +7,8 @@ pub fn guess_project() -> Option<String> {
         return None;
     }
 
-    current_dir().ok()?
+    current_dir()
+        .ok()?
         .file_name()?
         .to_str()
         .map(|x| x.to_string())
@@ -18,9 +17,7 @@ pub fn guess_project() -> Option<String> {
 pub fn guess_branch() -> Option<String> {
     debug!("guess_branch");
 
-    let result = Command::new("git")
-            .args(&["symbolic-ref", "head"])
-            .output();
+    let result = Command::new("git").args(&["symbolic-ref", "head"]).output();
 
     match result {
         Ok(r) => {
@@ -30,11 +27,11 @@ pub fn guess_branch() -> Option<String> {
                 // if the git branch is "" return None
                 Some(s) => match s.len() {
                     0 => None,
-                    _ => Some(s.trim().to_string())
+                    _ => Some(s.trim().to_string()),
                 },
-                None => None
+                None => None,
             }
-        },
-        Err(_) => None
+        }
+        Err(_) => None,
     }
 }

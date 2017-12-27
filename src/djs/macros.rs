@@ -27,4 +27,3 @@ macro_rules! dump_config {
                                ));
     }
 }
-

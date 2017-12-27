@@ -1,4 +1,3 @@
-
 use std::fmt;
 use std::error::Error;
 use console::style;
@@ -13,37 +12,58 @@ pub enum DjsError {
     XmlContentError(String),
     DownloadFailure(String, String, Box<::std::error::Error>),
     // what step, cause
-    StepFailed(String, Box<DjsError>)
+    StepFailed(String, Box<DjsError>),
 }
 
 impl DjsError {
-    pub fn step_failed<S>(step : S, why: DjsError) -> DjsError where S : Into<String> {
+    pub fn step_failed<S>(step: S, why: DjsError) -> DjsError
+    where
+        S: Into<String>,
+    {
         DjsError::StepFailed(step.into(), Box::new(why))
     }
-    pub fn download_failure<S>(url : S, fname: S, e: Box<Error>) -> DjsError where S: Into<String> {
+    pub fn download_failure<S>(url: S, fname: S, e: Box<Error>) -> DjsError
+    where
+        S: Into<String>,
+    {
         DjsError::DownloadFailure(url.into(), fname.into(), e)
     }
 }
 
-
 impl fmt::Display for DjsError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DjsError::InvalidConfig(ref opt, ref cur_val, ref notes) =>
-                write!(f, "{opt} \"{cur_val}\" is invalid. Hint: {notes}",
-                       opt = style(opt).green(),
-                       cur_val = style(cur_val).red(),
-                       notes = style(notes)),
-            DjsError::HttpError(ref re) =>
-                write!(f, "An HTTP Error Occured {re}",  re = re ),
-            DjsError::HttpRequestFailed(ref url, ref status) =>
-                write!(f, "{c} - {u}", c = style(status).red(), u = style(url).green()),
-            DjsError::XmlContentError(ref note) =>
-                write!(f, "An XML Content error occured : {e}", e = style(note).red()),
-            DjsError::DownloadFailure(ref url,ref _dest,ref error) =>
-                write!(f, "Downloading {u} failed: {e}", u = style(url).green(), e= error),
-            DjsError::StepFailed(ref step,ref nested) =>
-                write!(f, "{step} failed due to ----v\n    {nested}", step = step, nested = nested)
+            DjsError::InvalidConfig(ref opt, ref cur_val, ref notes) => write!(
+                f,
+                "{opt} \"{cur_val}\" is invalid. Hint: {notes}",
+                opt = style(opt).green(),
+                cur_val = style(cur_val).red(),
+                notes = style(notes)
+            ),
+            DjsError::HttpError(ref re) => write!(f, "An HTTP Error Occured {re}", re = re),
+            DjsError::HttpRequestFailed(ref url, ref status) => write!(
+                f,
+                "{c} - {u}",
+                c = style(status).red(),
+                u = style(url).green()
+            ),
+            DjsError::XmlContentError(ref note) => write!(
+                f,
+                "An XML Content error occured : {e}",
+                e = style(note).red()
+            ),
+            DjsError::DownloadFailure(ref url, ref _dest, ref error) => write!(
+                f,
+                "Downloading {u} failed: {e}",
+                u = style(url).green(),
+                e = error
+            ),
+            DjsError::StepFailed(ref step, ref nested) => write!(
+                f,
+                "{step} failed due to ----v\n    {nested}",
+                step = step,
+                nested = nested
+            ),
         }
     }
 }
@@ -51,13 +71,12 @@ impl fmt::Display for DjsError {
 impl Error for DjsError {
     fn description(&self) -> &str {
         match *self {
-            DjsError::InvalidConfig(_,_,_) => "Invalid Config",
+            DjsError::InvalidConfig(_, _, _) => "Invalid Config",
             DjsError::HttpError(_) => "HTTP Request Error",
-            DjsError::HttpRequestFailed(_,_) => "HTTP Request Failed",
+            DjsError::HttpRequestFailed(_, _) => "HTTP Request Failed",
             DjsError::XmlContentError(_) => "XML Content Error",
-            DjsError::DownloadFailure(_,_,_) => "Download Failure",
-            DjsError::StepFailed(_,ref nested) => nested.description()
+            DjsError::DownloadFailure(_, _, _) => "Download Failure",
+            DjsError::StepFailed(_, ref nested) => nested.description(),
         }
     }
 }
-
