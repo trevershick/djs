@@ -68,10 +68,10 @@ matrix:
     #  env: TARGET=x86_64-unknown-linux-gnu
     # Minimum Rust supported channel.
     - os: osx
-      rust: 1.22.1
+      rust: stable
       env: TARGET=x86_64-apple-darwin
     - os: linux
-      rust: 1.22.1
+      rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
       #- os: linux
       #- rust: 1.22.1
@@ -109,9 +109,10 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
-      secure: "my-key"
+      secure: VzPmTdKNi8Fnns0AvMwUdzpCe1ZDwaeaqEGJSu2qYVY2STavpc8OhYG5wrg6TyzM24CIXqMra/uN9RrOYJ0kB1EJPw83GExYirzbSi348QTbKile6Ye34PeelMtNTUp7C3PEcYZwSSrno3undXp/qM6i0upfYz5uZ0e00VbslYQ4JCj/UgySwvgmSReKRfJz6JnMAd9J5mEJjPrMlVlFFImV2C+P4/iBaUPJK10QxqDMDo2kVoqRaGuiyCDnMqkGqGy0uqqFPGyyP/jiLSv3OJtBra29nbmf+lOh8sIfbGTVU1toFHLGGt2LNDA9monINaptbg1Ac1rnaODp9UnnB4GC923BKvsgRPmpgA/VlZfZ8h+WLuVD83ieyZ6EUwYjUnykkD6GUVB8PmRrtjj5zvudFs6TOcjBAFg8i5uqwixe4lUrHAz8fJozXgxnRrJVLDzyFpho8jL1ixBEzWRAOx/l/NZ1QR8w4JNN9SkH6nN+94/jAkbkonD+dn6U/P5bVFpiPKk0WFJ3F35/4vJX/t0ZeCOwXsK1g0ZsHbhu0J1BpeNVzXcYp2agRKsBFfyc5Ayi2Z+pH+viSL5HRIZbqM9i+/BawL/+cCRvbOboqDTHEbMHYeapPgvhk2ILUxm8NlAxN3IraI6eLnFLosgkgSpGludVKT7DWVDrbe4Ybok=
   file_glob: true
   file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.*
+  repo: trevershick/djs
   # don't delete the artifacts from previous phases
   skip_cleanup: true
   # deploy when a new tag is pushed
@@ -119,8 +120,9 @@ deploy:
     # channel to use to produce the release artifacts
     # NOTE make sure you only release *once* per target
     # TODO you may want to pick a different channel
-    condition: $TRAVIS_RUST_VERSION = nightly
+    condition: $TRAVIS_RUST_VERSION = stable
     tags: true
+
 
 branches:
   only:
