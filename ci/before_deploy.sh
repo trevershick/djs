@@ -20,11 +20,12 @@ mk_tarball() {
 
     cp target/$TARGET/release/djs "$td/$name/djs"
     ${gcc_prefix}strip "$td/$name/djs"
-    cp {doc/djs.1,README.md,UNLICENSE,COPYING,LICENSE-MIT} "$td/$name/"
+    #cp {doc/djs.1,README.md,UNLICENSE,COPYING,LICENSE-MIT} "$td/$name/"
+    cp {README.md} "$td/$name/"
     cp \
       target/$TARGET/release/build/djs-*/out/{djs.bash-completion,djs.fish,_djs.ps1} \
       "$td/$name/complete/"
-    cp complete/_djs "$td/$name/complete/"
+    #cp complete/_djs "$td/$name/complete/"
 
     pushd $tg
     tar czf "$out_dir/$name.tar.gz" *
