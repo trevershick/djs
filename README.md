@@ -1,8 +1,9 @@
 # djs
 
 [![Linux build status](https://travis-ci.org/trevershick/djs.svg?branch=master)](https://travis-ci.org/trevershick/djs)
+[![Windows build status](https://ci.appveyor.com/api/projects/status/github/trevershick/djs?branch=master&svg=true)](https://ci.appveyor.com/project/trevershick/djs)
 
-DJS is a simple utility that helps to download artifacts from Jenkins.  
+DJS is a simple utility that helps to download artifacts from Jenkins.
 
 ```djs``` makes it easy to repeatedly download the same file from Jenkins where the location of said file differs by Jenkins build name (branch) and build number (build).  It does this in a number of ways:
 * it will 'guess' your project based on the directory you're in.
