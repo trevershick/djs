@@ -2,13 +2,22 @@
 
 [![Linux build status](https://travis-ci.org/trevershick/djs.svg?branch=master)](https://travis-ci.org/trevershick/djs)
 
-DJS is a simple utility that helps to download artifacts from Jenkins.  In my day to day work i regularly have to download builds from Jenkins for testing and development purposes.  It quickly became tedious to locate the link, copy it and ```curl``` it to the place i needed.  Thus, djs was born.
+DJS is a simple utility that helps to download artifacts from Jenkins.  
 
 ```djs``` makes it easy to repeatedly download the same file from Jenkins where the location of said file differs by Jenkins build name (branch) and build number (build).  It does this in a number of ways:
 * it will 'guess' your project based on the directory you're in.
 * it will 'guess' the current branch based on the git project you're in.
 * it will locate the build number by number or by a symbolic name.
 * it allows you to save common parameters in a ```.djsrc``` file in the current directory as well as your home directory.
+
+
+Motivation
+----
+Primary - In my day to day work i regularly have to download builds from Jenkins for testing and development purposes.  It quickly became tedious to locate the link, copy it and ```curl``` it to the place i needed.  Thus, djs was born.
+
+Secondary - I want to practice Rust
+
+
 
 Usage
 ----
@@ -40,6 +49,9 @@ OPTIONS:
     -u, --url <Jenkins URL>
 ```
 
+*Note*
+```--build``` can be 'latest', 'lastSuccessfulBuild' and 'lastKeepForever'
+
 
 Case Study (mine)
 ----
@@ -52,25 +64,27 @@ My Jenkins server is setup with folders like this:
 My branch and build numbers change often but my project does not.  I almost always go to the same Jenkins server, so I set the Jenkins URL and base parameter in my ```~/.djsrc```.  Also, I download all artifacts to the same folder for easy access by my hosted VMs.
 
 ```
-    # the Jenkins URL
-    url = "http://192.168.1.109:8080"
+# the Jenkins URL
+url = "http://192.168.1.109:8080"
 
-    # the first part of the Jenkins URL path to my builds
-    base = "/job/MyCorp"
+# the first part of the Jenkins URL path to my builds
+base = "/job/MyCorp"
 
-    # download them all here:
-    destination = "/Users/trever.shick/Solutions"
+# download them all here:
+destination = "/Users/trever.shick/Solutions"
 ```
 
 I work on multiple projects as well, so I don't want to specify everything in my home directory.  I work in ```~/workspaces/primary/MyProject``` so in the ```~/workspaces/primary/MyProject/.djsrc``` I have the following:
 
 ```
+# the file name i repeatedly download
 solution = "MySolution.xml"
 ```
 
 Now, when I run ```djs``` in ```~/workspaces/primary/MyProject``` the last successful build is downloaded to ```/Users/trever.shick/Solutions```.
 
 Here's the output (with -v turned on [verbose output])
+
 ```
 Reading ~/.djsrc...done
 Reading .djsrc...done
@@ -91,7 +105,7 @@ HTTP request sent... 200 OK
 Length: 7340032 (7.00MB)
 Saving to: /Users/trever.shick/Solutions/myproject-mysolution-master-15.xml
 /Users/trever.shick/Solutions/myproject-mysolution-master-15.xml   [00:00:00] [=======] 7.00MB/7.00MB eta: 0s
-  Done
+Done
 ```
 
 
@@ -106,28 +120,23 @@ Our final build artifacts are called 'Solutions'.  So, "djs" is "D"ownload "J"en
 Installation
 ----
 
-The only way to install at this time is via a homebrew tap.
+The only way to install at this time is via a homebrew tap (unless you want to clone this and do a ```cargo install```)
 
 ```
-  brew tap trevershick/djs https://github.com/trevershick/djs.git
-  brew install trevershick/djs
+brew tap trevershick/djs https://github.com/trevershick/djs.git
+brew install trevershick/djs
 ```
-
-My Setup
-----
-
 
 To Do
 ----
-* init the .rc file
-* add tests
+* initialize an .rc file with defaults
 
 Done
 ----
 * a git guess in a non git folder should return None
 * 'guess' the project. it's reasonable to assume the directory that djs is being executed in is the project directory, confirm with Jenkins once guess is made
 * add 'latest' to the mix
-* a git guess should only override defaults, notthing from a djsrc file (compare_and_set semantics with source)
+* a git guess should only override defaults, nothing from a djsrc file (compare_and_set semantics with source)
 * finding artifact doesn't work when there's > 1, specifying the entire relativePath doesn't work either (build-test/package/ClientDeploy.xml)
 
 
