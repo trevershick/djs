@@ -16,11 +16,6 @@ The only way to install at this time is via a homebrew tap.
 To Do
 ----
 * init the .rc file
-* change latestSuccessful and lastKeepForever to see if there are ANY builds and report on that
-* We need an option to download without mangling,just a simple overwrite in the dir.
-* we need an option to download without mangling but make directories to mimic the information from the filename, project,branch,etc.
-* after a git guess, check to see if that build exists
-* cli validator
 * add tests
 
 Done
@@ -34,5 +29,9 @@ Done
 
 Nice to Haves
 ----
+* We need an option to download without mangling,just a simple overwrite in the dir.
+* we need an option to download without mangling but make directories to mimic the information from the filename, project,branch,etc.
+* after a git guess, check to see if that build exists
+* change latestSuccessful and lastKeepForever to see if there are ANY builds and report on that
 * we should be able to 'guess' at a solution by looking for 'DELETE.xml' and taking the root (not the airgapped one)
 
