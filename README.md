@@ -2,6 +2,17 @@
 
 [![Linux build status](https://travis-ci.org/trevershick/djs.svg?branch=master)](https://travis-ci.org/trevershick/djs)
 
+Installation
+----
+
+The only way to install at this time is via a homebrew tap.
+
+```
+  brew tap trevershick/djs https://github.com/trevershick/djs.git
+  brew install trevershick/djs
+```
+
+
 To Do
 ----
 * init the .rc file
