@@ -43,12 +43,7 @@ pub fn cdata_string<'de, R: Read>(r: R) -> Result<String, DjsError> {
     let fv = coll.map(|c| c.only_value());
 
     match fv {
-        Ok(x) => match x {
-            Some(v) => Ok(v),
-            None => Err(DjsError::XmlContentError(
-                "The Xml Collection contained no elements".to_string(),
-            )),
-        },
+        Ok(x) => x.ok_or(DjsError::EmptyContentError),
         Err(_) => Err(DjsError::XmlContentError(
             "Couldn't extract element from list.".to_string(),
         )),

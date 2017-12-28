@@ -166,7 +166,12 @@ impl Jenkins {
         let url = self.find_artifact_path_url(build_num);
         debug!("Downloading {}", url);
 
-        get(url).and_then(&cdata_string)
+        let solution = self.config.borrow().solution.get().clone();
+        match get(url).and_then(&cdata_string) {
+            Ok(s) => Ok(s),
+            Err(DjsError::EmptyContentError) => Err(DjsError::ArtifactNotFound(solution)),
+            Err(x) => Err(x)
+        }
     }
 
     fn update_build_with(&self, bn: i32) {

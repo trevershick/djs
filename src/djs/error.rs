@@ -10,6 +10,8 @@ pub enum DjsError {
     HttpError(reqwest::Error),
     HttpRequestFailed(String, String),
     XmlContentError(String),
+    ArtifactNotFound(String),
+    EmptyContentError,
     DownloadFailure(String, String, Box<::std::error::Error>),
     // what step, cause
     StepFailed(String, Box<DjsError>),
@@ -52,6 +54,8 @@ impl fmt::Display for DjsError {
                 "An XML Content error occured : {e}",
                 e = style(note).red()
             ),
+            DjsError::EmptyContentError => write!(f, "No data returned in xml."),
+            DjsError::ArtifactNotFound(ref a) => write!(f, "Unable to find the artifact {a}", a = style(a).red()),
             DjsError::DownloadFailure(ref url, ref _dest, ref error) => write!(
                 f,
                 "Downloading {u} failed: {e}",
@@ -76,6 +80,8 @@ impl Error for DjsError {
             DjsError::HttpRequestFailed(_, _) => "HTTP Request Failed",
             DjsError::XmlContentError(_) => "XML Content Error",
             DjsError::DownloadFailure(_, _, _) => "Download Failure",
+            DjsError::ArtifactNotFound(_) => "Can't find artifact.",
+            DjsError::EmptyContentError => "No data returned in xml.",
             DjsError::StepFailed(_, ref nested) => nested.description(),
         }
     }
