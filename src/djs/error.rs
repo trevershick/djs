@@ -10,7 +10,8 @@ pub enum DjsError {
     HttpError(reqwest::Error),
     HttpRequestFailed(String, String),
     XmlContentError(String),
-    ArtifactNotFound(String),
+    // solution, url
+    ArtifactNotFound(String, String),
     EmptyContentError,
     DownloadFailure(String, String, Box<::std::error::Error>),
     // what step, cause
@@ -24,6 +25,7 @@ impl DjsError {
     {
         DjsError::StepFailed(step.into(), Box::new(why))
     }
+
     pub fn download_failure<S>(url: S, fname: S, e: Box<Error>) -> DjsError
     where
         S: Into<String>,
@@ -55,7 +57,12 @@ impl fmt::Display for DjsError {
                 e = style(note).red()
             ),
             DjsError::EmptyContentError => write!(f, "No data returned in xml."),
-            DjsError::ArtifactNotFound(ref a) => write!(f, "Unable to find the artifact {a}", a = style(a).red()),
+            DjsError::ArtifactNotFound(ref a, ref url) => write!(
+                f,
+                "Unable to find the artifact {a}. --v\n    {u}",
+                a = style(a).red(),
+                u = style(url).green()
+            ),
             DjsError::DownloadFailure(ref url, ref _dest, ref error) => write!(
                 f,
                 "Downloading {u} failed: {e}",
@@ -75,12 +82,12 @@ impl fmt::Display for DjsError {
 impl Error for DjsError {
     fn description(&self) -> &str {
         match *self {
-            DjsError::InvalidConfig(_, _, _) => "Invalid Config",
-            DjsError::HttpError(_) => "HTTP Request Error",
-            DjsError::HttpRequestFailed(_, _) => "HTTP Request Failed",
-            DjsError::XmlContentError(_) => "XML Content Error",
-            DjsError::DownloadFailure(_, _, _) => "Download Failure",
-            DjsError::ArtifactNotFound(_) => "Can't find artifact.",
+            DjsError::InvalidConfig(..) => "Invalid Config",
+            DjsError::HttpError(..) => "HTTP Request Error",
+            DjsError::HttpRequestFailed(..) => "HTTP Request Failed",
+            DjsError::XmlContentError(..) => "XML Content Error",
+            DjsError::DownloadFailure(..) => "Download Failure",
+            DjsError::ArtifactNotFound(..) => "Can't find artifact.",
             DjsError::EmptyContentError => "No data returned in xml.",
             DjsError::StepFailed(_, ref nested) => nested.description(),
         }

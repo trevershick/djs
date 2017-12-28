@@ -212,7 +212,7 @@ pub fn validate_config(config: Rc<RefCell<Config>>) -> Result<(), DjsError> {
 
 #[cfg(test)]
 mod tests {
-    macro_rules! cset {
+    macro_rules! set_c {
         ($config: ident, $opt:ident, $val: expr) => {
             $config.$opt.set($val.to_string(), "test");
         }
@@ -226,7 +226,7 @@ mod tests {
             let mut c = Config {
                 ..Default::default()
             };
-            cset!(c, build, "lastSuccessfulBuild");
+            set_c!(c, build, "lastSuccessfulBuild");
             assert_eq!("ls", c.abbreviated_build());
         }
         #[test]
@@ -234,7 +234,7 @@ mod tests {
             let mut c = Config {
                 ..Default::default()
             };
-            cset!(c, build, "lastKeepForever");
+            set_c!(c, build, "lastKeepForever");
             assert_eq!("kf", c.abbreviated_build());
         }
         #[test]
@@ -242,8 +242,8 @@ mod tests {
             let mut c = Config {
                 ..Default::default()
             };
-            cset!(c, build, "master");
-            assert_eq!("master", c.abbreviated_build());
+            set_c!(c, build, "xxx");
+            assert_eq!("xxx", c.abbreviated_build());
         }
     }
 
@@ -263,7 +263,7 @@ mod tests {
             let mut c = Config {
                 ..Default::default()
             };
-            cset!(c, branch, "DISCOVER-1814");
+            set_c!(c, branch, "DISCOVER-1814");
             assert_eq!(c.destination_path().as_str(), "./discover-1814-ls.xml");
         }
     }
