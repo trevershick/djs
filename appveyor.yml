@@ -42,6 +42,8 @@ install:
 
 # ???
 build: false
+#version: '0.1.0.{build}'
+version: '0.1.0'
 
 # Equivalent to Travis' `script` phase
 test_script:
