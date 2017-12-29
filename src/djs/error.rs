@@ -5,11 +5,12 @@ use reqwest;
 
 #[derive(Debug)]
 pub enum DjsError {
+    InvalidDestinationTemplate(String),
     // option, current value, notes
     InvalidConfig(String, String, String),
     HttpError(reqwest::Error),
     HttpRequestFailed(String, String),
-    XmlContentError(String),
+    XmlContentError(String,String /*bad value*/),
     // solution, url
     ArtifactNotFound(String, String),
     EmptyContentError,
@@ -37,6 +38,9 @@ impl DjsError {
 impl fmt::Display for DjsError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
+            DjsError::InvalidDestinationTemplate(ref fmt) => {
+                write!(f, "{} {}", "Invalid Format", style(fmt).red())
+            }
             DjsError::InvalidConfig(ref opt, ref cur_val, ref notes) => write!(
                 f,
                 "{opt} \"{cur_val}\" is invalid. Hint: {notes}",
@@ -51,10 +55,11 @@ impl fmt::Display for DjsError {
                 c = style(status).red(),
                 u = style(url).green()
             ),
-            DjsError::XmlContentError(ref note) => write!(
+            DjsError::XmlContentError(ref note, ref bad_value) => write!(
                 f,
-                "An XML Content error occured : {e}",
-                e = style(note).red()
+                "An XML Content error occured : {} for \"{}\"",
+                style(note).red(),
+                style(bad_value).red()
             ),
             DjsError::EmptyContentError => write!(f, "No data returned in xml."),
             DjsError::ArtifactNotFound(ref a, ref url) => write!(
@@ -82,6 +87,7 @@ impl fmt::Display for DjsError {
 impl Error for DjsError {
     fn description(&self) -> &str {
         match *self {
+            DjsError::InvalidDestinationTemplate(..) => "Invalid Destination Template",
             DjsError::InvalidConfig(..) => "Invalid Config",
             DjsError::HttpError(..) => "HTTP Request Error",
             DjsError::HttpRequestFailed(..) => "HTTP Request Failed",

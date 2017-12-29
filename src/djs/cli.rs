@@ -26,6 +26,7 @@ pub fn configure_from_cli(config: Rc<RefCell<Config>>, opts: &ArgMatches) -> Res
     set_config!(c, opts, solution, "-s");
     set_config!(c, opts, solution_filter, "-S");
     set_config!(c, opts, destination, "-d");
+    set_config!(c, opts, destination_template, "-D");
 
     if opts.is_present("dry_run") {
         c.dry_run.set(true, String::from("cli"));
@@ -62,7 +63,7 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("project")
                 .short("p")
                 .long("project")
-                .value_name("Project Name (Jenkins Path Element)")
+                .value_name("Project Name")
                 .takes_value(true),
         )
         .arg(
@@ -77,6 +78,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .short("j")
                 .long("build")
                 .value_name("BUILD NUMBER")
+                .help("(#|latest|lastSuccessfulBuild|lastKeepForever)")
                 .takes_value(true),
         )
         .arg(
@@ -102,18 +104,29 @@ pub fn build_cli() -> App<'static, 'static> {
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name("destination_template")
+                .short("D")
+                .long("destination-template")
+                .value_name("TEMPLATE")
+                .help("Sets the output template for the saved filename.")
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("verbose")
                 .short("v")
+                .long("verbose")
                 .help("If set to true, extra information will be sent to the console"),
         )
         .arg(
             Arg::with_name("dry_run")
                 .short("n")
+                .long("dry-run")
                 .help("If set to true, nothing will be downloaded."),
         )
         .arg(
             Arg::with_name("quiet")
                 .short("q")
+                .long("quiet")
                 .multiple(false)
                 .help("Turns off output"),
         );

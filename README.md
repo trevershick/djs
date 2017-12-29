@@ -54,6 +54,7 @@ OPTIONS:
 ```--build``` can be 'latest', 'lastSuccessfulBuild' and 'lastKeepForever'
 
 
+
 Case Study (mine)
 ----
 My Jenkins server is setup with folders like this:
@@ -109,12 +110,60 @@ Saving to: /Users/trever.shick/Solutions/myproject-mysolution-master-15.xml
 Done
 ```
 
+Destination Path
+----
+By default djs will download your file to the current directory unless otherwise specified by ```destination``` or ```-d``` which can be either a directory or a filename.
+If ```destination``` points to a directory then djs will rename the downloaded file with the following template:
 
+```
+  {project}-{branch}-{build}.{extension} #yields myproj-mybranch-15.xml
+
+  or if your branch name "djs-123" contains the project name "djs" then
+  {branch}-{build}.{extension} #yields djs-15.xml
+
+```
+
+You can customize this via the ```destination_template``` configuration value in your .djsrc file or via the ```-D``` command line option.  The value is a string that contains
+format specifiers. Examples are shown below.
+
+```
+  {project}-{solution_basename}-{solution_filter}-{branch}-{build}-{build_abbreviation}.{solution_extension}
+  #yields
+  ./proj1-solution-filter1-branch1-latest-lt.txt"
+```
+
+Format Specifiers
+----
+
+All format specifiers come in three flavors. Lowercase, Uppercase and Preserve Case.  Shown below are the output values for various specifiers and the input value "Project1".
+
+Input        | Format        | Output
+------------ | ------------- | ----------------
+Project1     | project       | project1
+Project1     | Project       | Project1
+Project1     | PROJECT       | PROJECT1
+
+**All Specifiers**
+
+All the specifiers below are available in the three variants mentioned above, Lowercase, Uppercase and Preserve Case
+
+Specifier            | Example Value
+-------------------- | --------------------------
+project              | project1
+solution             | myfile.xml
+solution_basename    | myfile
+solution_extension   | xml
+solution_filter      | build-test
+branch               | 1_fix_caps
+branch_nums          | 1
+branch_alphas        | fixcaps
+build                | 15
+build_abbreviation   | ls (ls=lastSuccessfulBuild, lt=latest, kf=lastKeepForever)
 
 
 
 Why "djs"?
----
+----
 Our final build artifacts are called 'Solutions'.  So, "djs" is "D"ownload "J"enkins "S" solution.
 
 
