@@ -1,16 +1,10 @@
-#[macro_use]
-extern crate clap;
-#[allow(unused_imports)]
 extern crate console;
 extern crate env_logger;
-#[macro_use]
-extern crate log;
 extern crate reqwest;
-#[macro_use]
-extern crate serde_derive;
-
-#[macro_use]
-mod djs;
+#[macro_use] extern crate clap;
+#[macro_use] extern crate log;
+#[macro_use] extern crate serde_derive;
+#[macro_use] mod djs;
 
 use std::rc::Rc;
 use std::path::Path;
