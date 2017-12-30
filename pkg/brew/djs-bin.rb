@@ -15,7 +15,7 @@ class DjsBin < Formula
 
   def install
     bin.install "djs"
-    #man1.install "djs.1"
+    man1.install "djs.1"
 
     #bash_completion.install "complete/djs.bash-completion"
     #fish_completion.install "complete/djs.fish"

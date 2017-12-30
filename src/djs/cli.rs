@@ -99,7 +99,7 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("destination")
                 .short("d")
                 .long("destination")
-                .value_name("SOLUTION")
+                .value_name("destination")
                 .help("Sets the branch to download")
                 .takes_value(true),
         )
