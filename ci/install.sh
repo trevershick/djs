@@ -30,12 +30,11 @@ install_pandoc() {
             brew install pandoc
             ;;
         *)
-            sudo apt-get install cabal-install
-			cabal update
-			export PATH=$HOME/.cabal/bin:$PATH
-			cabal install alex happy
-			cabal install pandoc pandoc-citeproc
-			pandoc --version
+            export PATH=$HOME/.cabal/bin:$PATH
+            cabal update
+            cabal install alex happy
+            cabal install pandoc pandoc-citeproc
+            pandoc --version
             ;;
     esac
 }
