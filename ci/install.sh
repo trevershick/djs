@@ -23,22 +23,6 @@ install_rustup() {
     cargo -V
 }
 
-install_pandoc() {
-    case $TARGET in
-        x86_64-apple-darwin)
-            brew update
-            brew install pandoc
-            ;;
-        *)
-            export PATH=$HOME/.cabal/bin:$PATH
-            cabal update
-            cabal install alex happy
-            cabal install pandoc pandoc-citeproc
-            pandoc --version
-            ;;
-    esac
-}
-
 install_standard_crates() {
     if [ $(host) != "$TARGET" ]; then
         rustup target add $TARGET
@@ -68,7 +52,6 @@ main() {
     install_c_toolchain
     install_rustup
     install_standard_crates
-    install_pandoc
     configure_cargo
 
     # TODO if you need to install extra stuff add it here

@@ -12,8 +12,6 @@ addons:
       # Needed for completion-function test
       - zsh
       - libssl-dev
-      - cabal-install
-      - ghc
 
 matrix:
   fast_finish: true
