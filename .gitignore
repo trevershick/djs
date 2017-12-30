@@ -1,4 +1,6 @@
 /target/
 **/*.rs.bk
 *.swp
+*.tmp
 .DS_Store
+doc/djs.1

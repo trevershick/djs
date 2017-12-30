@@ -22,6 +22,7 @@ main() {
     if [ "$(architecture)" = "amd64" ] || [ "$(architecture)" = "i386" ]; then
         cargo test --target "${TARGET}" --verbose --all
     fi
+    make doc
 
     # sanity check the file type
     file target/$TARGET/debug/djs
