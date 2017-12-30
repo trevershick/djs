@@ -23,6 +23,18 @@ install_rustup() {
     cargo -V
 }
 
+install_pandoc() {
+    case $TARGET in
+        x86_64-apple-darwin)
+            brew update
+            brew install pandoc
+            ;;
+        *)
+            # other targets are setup via travis' apt addon
+            ;;
+    esac
+}
+
 install_standard_crates() {
     if [ $(host) != "$TARGET" ]; then
         rustup target add $TARGET
@@ -52,6 +64,7 @@ main() {
     install_c_toolchain
     install_rustup
     install_standard_crates
+    install_pandoc
     configure_cargo
 
     # TODO if you need to install extra stuff add it here

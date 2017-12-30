@@ -12,6 +12,7 @@ addons:
       # Needed for completion-function test
       - zsh
       - libssl-dev
+      - pandoc
 
 matrix:
   fast_finish: true
