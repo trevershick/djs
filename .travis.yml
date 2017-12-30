@@ -13,6 +13,7 @@ addons:
       - zsh
       - libssl-dev
       - cabal-install
+      - ghc
 
 matrix:
   fast_finish: true
