@@ -1,4 +1,4 @@
-language: rust
+l/nanguage: rust
 cache:    cargo
 
 env:
@@ -12,7 +12,6 @@ addons:
       # Needed for completion-function test
       - zsh
       - libssl-dev
-      - pandoc
 
 matrix:
   fast_finish: true
