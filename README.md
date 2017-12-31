@@ -25,7 +25,7 @@ Usage
 ```djs -h``` output
 
 ```
-Jenkins Solution Downloader (jds) 0.1.0
+Jenkins Solution Downloader (jds) 0.2.0
 Trever Shick <trever.shick@tanium.com>
 Helps download solution XMLs from Jenkins
 
@@ -40,15 +40,15 @@ FLAGS:
     -v, --verbose    If set to true, extra information will be sent to the console
 
 OPTIONS:
-    -e, --base <Base URL before getting to project root>    
-    -b, --branch <BRANCH>                                   
+    -e, --base <Base URL before getting to project root>
+    -b, --branch <BRANCH>
     -j, --build <BUILD NUMBER>                              (#|latest|lastSuccessfulBuild|lastKeepForever)
     -d, --destination <destination>                         Sets the branch to download
     -D, --destination-template <TEMPLATE>                   Sets the output template for the saved filename.
-    -p, --project <Project Name>                            
-    -s, --solution <SOLUTION>                               
-    -S, --solution-filter <FILTER>                          
-    -u, --url <Jenkins URL>                                 
+    -p, --project <Project Name>
+    -s, --solution <SOLUTION>
+    -S, --solution-filter <FILTER>
+    -u, --url <Jenkins URL>
 ```
 
 *Note*
