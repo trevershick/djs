@@ -1,5 +1,6 @@
 TEST_EXE=$(shell ls -tcS target/debug/djs-* 2>/dev/null | head -n1)
 
+PROJECT_ROOT = $(shell pwd)
 RBENV=$(shell which rbenv)
 CHANGELOG_GENERATOR = $(shell which github_changelog_generator)
 KCOV=../kcov/build/src/Release/kcov
@@ -10,14 +11,13 @@ SRC=$(shell find src -name "*.rs")
 TARGET = target
 SUBDIRS=doc
 
+export DEBUG_EXE PROJECT_ROOT
 
-export DEBUG_EXE
-
-.PHONY: default clean test coverage doc $(SUBDIRS)
+.PHONY: default clean test coverage doc generators
 
 default: test
 
-all: test doc
+all: test doc generators
 
 clean:
 	rm -rf $(TARGET)
@@ -34,6 +34,9 @@ test: $(TEST_EXE)
 coverage: $(TEST_EXE)
 	mkdir -p target/debug/coverage
 	$(KCOV) target/debug/coverage $(TEST_EXE)
+
+generators:
+	$(MAKE) -C $@
 
 doc: $(DEBUG_EXE) CHANGELOG.md
 	$(MAKE) -C $@
