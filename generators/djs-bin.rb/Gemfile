@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+
+# gem "rails"
+
+# Added at 2017-12-31 14:26:07 -0500 by trever.shick:
+gem "toml", "~> 0.2.0"
+
+
+# Added at 2017-12-31 15:06:08 -0500 by trever.shick:
+gem "ruby-progressbar", "~> 1.9"

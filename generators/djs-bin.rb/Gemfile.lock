@@ -1,0 +1,17 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    parslet (1.8.1)
+    ruby-progressbar (1.9.0)
+    toml (0.2.0)
+      parslet (~> 1.8.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  ruby-progressbar (~> 1.9)
+  toml (~> 0.2.0)
+
+BUNDLED WITH
+   1.16.1
