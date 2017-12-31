@@ -1,5 +1,5 @@
 class DjsBin < Formula
-  version '0.1.0'
+  version '0.2.0'
   desc "Targeted Jenkins Artifact Downloader - downloads artifacts from Jenkins based on branch, build and other information"
   homepage "https://github.com/trevershick/djs"
 
