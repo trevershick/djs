@@ -37,7 +37,7 @@ impl From<reqwest::Error> for DjsError {
 fn get(url: String) -> Result<reqwest::Response, DjsError> {
     reqwest::Client::builder()
         .gzip(false)
-        .timeout(Duration::from_secs(3))
+        .timeout(Duration::from_secs(15))
         .build()
         .unwrap()
         .get(url.as_str())
