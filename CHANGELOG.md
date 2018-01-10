@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/trevershick/djs/tree/HEAD)
-
-[Full Changelog](https://github.com/trevershick/djs/compare/0.2.0...HEAD)
+## [0.3.0](https://github.com/trevershick/djs/tree/0.3.0) (2018-01-10)
+[Full Changelog](https://github.com/trevershick/djs/compare/0.2.0...0.3.0)
 
 **Fixed bugs:**
 
