@@ -28,11 +28,17 @@ pub fn configure_from_cli(config: Rc<RefCell<Config>>, opts: &ArgMatches) -> Res
     set_config!(c, opts, destination, "-d");
     set_config!(c, opts, destination_template, "-D");
 
+    if opts.is_present("timeout") {
+        match opts.value_of("timeout").unwrap().parse::<i32>() {
+            Ok(v) => c.timeout_in_seconds.set(v, String::from("cli")),
+            Err(_) => ()
+        }
+    }
     if opts.is_present("dry_run") {
         c.dry_run.set(true, String::from("cli"));
     }
     if opts.is_present("verbose") {
-        c.verbose.set(true, String::from("verbose"));
+        c.verbose.set(true, String::from("cli"));
     }
     if opts.is_present("quiet") {
         c.quiet.set(true, String::from("cli"));
@@ -109,6 +115,14 @@ pub fn build_cli() -> App<'static, 'static> {
                 .long("destination-template")
                 .value_name("TEMPLATE")
                 .help("Sets the output template for the saved filename.")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("timeout")
+                .short("t")
+                .long("timeout")
+                .value_name("SECONDS")
+                .help("Sets the timeout value for HTTP connections.")
                 .takes_value(true),
         )
         .arg(

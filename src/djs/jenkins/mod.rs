@@ -34,10 +34,10 @@ impl From<reqwest::Error> for DjsError {
     }
 }
 
-fn get(url: String) -> Result<reqwest::Response, DjsError> {
+fn get(url: String, config: &Config) -> Result<reqwest::Response, DjsError> {
     reqwest::Client::builder()
         .gzip(false)
-        .timeout(Duration::from_secs(15))
+        .timeout(Duration::from_secs(config.timeout_in_seconds.get() as u64))
         .build()
         .unwrap()
         .get(url.as_str())
@@ -80,11 +80,14 @@ impl Jenkins {
 
         debug!("  url={}", url);
 
-        get(url).and_then(&cdata_i32).map_err(|e| {
+        get(url, &self.config.borrow()).and_then(&cdata_i32).map_err(|e| {
             DjsError::step_failed("Unable to resolve the last \"keep forever\" build", e)
         })
     }
 
+    ///
+    /// Constructs the url to obtain the build number for the latest build
+    ///
     fn build_number_for_latest_url(&self) -> String {
         debug!(
             "build_number_for_latest_url, build={:?}",
@@ -117,7 +120,7 @@ impl Jenkins {
         debug!("build_number_for_latest, build={:?}", get_c!(self, build));
         let url = self.build_number_for_latest_url();
 
-        get(url)
+        get(url, &self.config.borrow())
             .and_then(&cdata_i32)
             .map_err(|e| DjsError::step_failed("Unable to resolve the latest build", e))
     }
@@ -129,7 +132,7 @@ impl Jenkins {
         );
         let url = self.build_number_for_last_successful_url();
 
-        get(url).and_then(&cdata_i32).map_err(|e: DjsError| {
+        get(url, &self.config.borrow()).and_then(&cdata_i32).map_err(|e: DjsError| {
             DjsError::step_failed("Unable to resolve the last successful build", e)
         })
     }
@@ -165,7 +168,7 @@ impl Jenkins {
         debug!("Downloading {}", url);
 
         let solution = get_c!(self, solution);
-        get(url.clone())
+        get(url.clone(), &self.config.borrow())
             .and_then(&cdata_string)
             .map_err(|e| match e {
                 EmptyContentError => ArtifactNotFound(solution, url),
@@ -177,10 +180,13 @@ impl Jenkins {
         debug!("Update configuration with build number {:?}", bn);
         let old_build_number = get_c!(self, build);
 
-        let mut src = get_c!(self, build);
+        // get the current source of the build value, we'll
+        // use that in the verbose output when we specify the new
+        // source
+        let mut src = self.config.borrow().build.source();
         src = format!("jenkins, was {} from {}", old_build_number, src);
 
-        self.config.borrow_mut().build.set(bn.to_string(), src);
+        self.config.borrow_mut().resolved_build.set(bn.to_string(), src);
     }
 
     pub fn resolve_download_url(&mut self) -> Result<String, DjsError> {
@@ -247,7 +253,10 @@ impl Jenkins {
                 self.update_build_with(bn);
                 Ok(bn)
             }),
-            _ => self.build_number_from_build(),
+            _ => self.build_number_from_build().and_then(|bn| {
+                self.update_build_with(bn);
+                Ok(bn)
+            })
         }
     }
 }

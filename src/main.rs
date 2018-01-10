@@ -102,6 +102,7 @@ fn main() {
         dump_config!(mediator, config_snapshot, "Project", project);
         dump_config!(mediator, config_snapshot, "Branch", branch);
         dump_config!(mediator, config_snapshot, "Build", build);
+        dump_config!(mediator, config_snapshot, "Resolved Build", resolved_build);
         dump_config!(mediator, config_snapshot, "Solution", solution);
         dump_config!(
             mediator,
@@ -116,6 +117,7 @@ fn main() {
             "Destination Path",
             destination_path
         );
+        dump_config!(mediator, config_snapshot, "Timeout", timeout_in_seconds);
     }
 
     let download_result = resolved_url.and_then(|url| {
@@ -123,7 +125,7 @@ fn main() {
         if !config.borrow().dry_run.get() {
             let destination_path = config.borrow().destination_path();
 
-            download(url.as_str(), destination_path.as_str(), &mut mediator)
+            download(url.as_str(), destination_path.as_str(), &config.borrow(), &mut mediator)
         } else {
             mediator.print(format!("Dry Run, not downloading the file."));
             Ok(())

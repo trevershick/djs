@@ -32,6 +32,10 @@ pub fn configure_from_file(
         set_config!(config, tree, solution, p_str);
         set_config!(config, tree, solution_filter, p_str);
         set_config!(config, tree, destination, p_str);
+
+        if let Some(v) = tree.get::<i32>("timeout") {
+            config.borrow_mut().timeout_in_seconds.set(*v, p_str);
+        }
     }
 
     // load the file A
