@@ -24,6 +24,7 @@ pub struct Config {
 
     pub branch: ConfigValue<String>,
     pub build: ConfigValue<String>,
+    pub resolved_build: ConfigValue<String>,
 
     pub solution: ConfigValue<String>,
     pub solution_filter: ConfigValue<String>,
@@ -32,6 +33,7 @@ pub struct Config {
     pub dry_run: ConfigValue<bool>,
     pub verbose: ConfigValue<bool>,
     pub quiet: ConfigValue<bool>,
+    pub timeout_in_seconds: ConfigValue<i32>
 }
 
 #[derive(Debug, Clone)]
@@ -194,7 +196,7 @@ impl Config {
             s!("branch") => get_c!(self,branch).to_lowercase(),
             s!("branch_nums") => branch_nums.to_lowercase(),
             s!("branch_alphas") => branch_alphas.to_lowercase(),
-            s!("build") => get_c!(self,build).to_lowercase(),
+            s!("build") => get_c!(self,resolved_build).to_lowercase(),
             s!("build_abbreviation") => self.abbreviated_build().to_lowercase(),
             s!("solution") => get_c!(self,solution).to_lowercase(),
             s!("solution_basename") => solution_basename.to_lowercase(),
@@ -205,7 +207,7 @@ impl Config {
             s!("BRANCH") => get_c!(self,branch).to_uppercase(),
             s!("BRANCH_NUMS") => branch_nums.to_uppercase(),
             s!("BRANCH_ALPHAS") => branch_alphas.to_uppercase(),
-            s!("BUILD") => get_c!(self,build).to_uppercase(),
+            s!("BUILD") => get_c!(self,resolved_build).to_uppercase(),
             s!("BUILD_ABBREVIATION") => self.abbreviated_build().to_uppercase(),
             s!("SOLUTION") => get_c!(self,solution).to_uppercase(),
             s!("SOLUTION_BASENAME") => solution_basename.to_uppercase(),
@@ -216,7 +218,7 @@ impl Config {
             s!("Branch") => get_c!(self,branch),
             s!("Branch_Nums") => branch_nums,
             s!("Branch_Alphas") => branch_alphas,
-            s!("Build") => get_c!(self,build),
+            s!("Build") => get_c!(self,resolved_build),
             s!("Build_Abbreviation") => self.abbreviated_build(),
             s!("Solution") => get_c!(self,solution),
             s!("Solution_Basename") => solution_basename,
@@ -235,9 +237,16 @@ impl Config {
         }
 
         d.push_str(self.branch.get().to_lowercase().as_ref());
-        d.push('-');
 
-        d.push_str(self.abbreviated_build().to_lowercase().as_ref());
+        let abn = self.abbreviated_build().to_lowercase();
+        let rbn = self.resolved_build.get().to_lowercase();
+        if rbn != abn {
+            d.push_str("-");
+            d.push_str(&rbn);
+        }
+
+        d.push_str("-");
+        d.push_str(&abn);
 
         if let Some(ext) = self.solution_extension() {
             d.push('.');
@@ -256,6 +265,7 @@ impl Default for Config {
 
             branch: ConfigValue::new(String::from(DEFAULT_BRANCH), String::from("defaults")),
             build: ConfigValue::new(String::from(DEFAULT_BUILD), String::from("defaults")),
+            resolved_build: ConfigValue::new(String::from(""), String::from("n/a")),
 
             solution: ConfigValue::new(String::from(DEFAULT_SOLUTION), String::from("defaults")),
             solution_filter: ConfigValue::new(
@@ -267,6 +277,7 @@ impl Default for Config {
                 String::from(DEFAULT_DESTINATION),
                 String::from("defaults"),
             ),
+
             destination_template: ConfigValue::new(
                 String::from(DEFAULT_DESTINATION_TEMPLATE),
                 String::from("defaults"),
@@ -275,6 +286,7 @@ impl Default for Config {
             dry_run: ConfigValue::new(false, String::from("defaults")),
             verbose: ConfigValue::new(false, String::from("defaults")),
             quiet: ConfigValue::new(false, String::from("defaults")),
+            timeout_in_seconds: ConfigValue::new(DEFAULT_TIMEOUT, String::from("defaults")),
         }
     }
 }
@@ -418,15 +430,17 @@ mod tests {
             set_c!(c, solution_filter, "filter1");
             set_c!(c, branch, "branch1");
             set_c!(c, build, "latest");
+            set_c!(c, resolved_build, "777");
             assert_eq!(
                 c.destination_path().as_str(),
-                "./proj1-solution-filter1-branch1-latest-lt.txt"
+                "./proj1-solution-filter1-branch1-777-lt.txt"
             );
 
-            set_c!(c, build, "14");
+            // what if the build specified was 777?
+            set_c!(c, build, "777");
             assert_eq!(
                 c.destination_path().as_str(),
-                "./proj1-solution-filter1-branch1-14-14.txt"
+                "./proj1-solution-filter1-branch1-777-777.txt"
             );
         }
 
@@ -438,10 +452,11 @@ mod tests {
             set_c!(c, solution, "solution.txt");
             set_c!(c, solution_filter, "filter1");
             set_c!(c, branch, "branch1");
+            set_c!(c, resolved_build, "777");
             set_c!(c, build, "latest");
             assert_eq!(
                 c.destination_path().as_str(),
-                "./PROJ1-SOLUTION-FILTER1-BRANCH1-LATEST-LT.TXT"
+                "./PROJ1-SOLUTION-FILTER1-BRANCH1-777-LT.TXT"
             );
         }
 
@@ -454,9 +469,10 @@ mod tests {
             set_c!(c, solution_filter, "Filter1");
             set_c!(c, branch, "Branch1");
             set_c!(c, build, "latest");
+            set_c!(c, resolved_build, "777");
             assert_eq!(
                 c.destination_path().as_str(),
-                "./Proj1-Solution-Filter1-Branch1-latest-lt.Txt"
+                "./Proj1-Solution-Filter1-Branch1-777-lt.Txt"
             );
         }
     }
@@ -501,15 +517,17 @@ mod tests {
 
         #[test]
         fn default_format() {
-            let c = config!();
-            assert_eq!(c.destination_path().as_str(), "./myproject-master-ls.xml");
+            let mut c = config!();
+            set_c!(c, resolved_build, "77");
+            assert_eq!(c.destination_path().as_str(), "./myproject-master-77-ls.xml");
         }
 
         #[test]
         fn doesnt_duplicate_project() {
             let mut c = config!();
             set_c!(c, branch, "MYPROJECT-1814");
-            assert_eq!(c.destination_path().as_str(), "./myproject-1814-ls.xml");
+            set_c!(c, resolved_build, "14");
+            assert_eq!(c.destination_path().as_str(), "./myproject-1814-14-ls.xml");
         }
     }
 }

@@ -32,9 +32,10 @@ macro_rules! dump_configm {
 
 macro_rules! dump_config {
     ($mediator:ident, $config: ident, $title:expr, $opt:ident) => {
-        let value = match $config.$opt.get().len() {
+        let v : String = format!("{}", $config.$opt.get());
+        let value = match v.len() {
             0 => "<empty>".to_string(),
-            _ => $config.$opt.get()
+            _ => v
         };
         $mediator.print(format!("{} ({}): {} [source: {}]",
                                $title,

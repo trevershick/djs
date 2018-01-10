@@ -10,3 +10,5 @@ pub const DEFAULT_DESTINATION: &'static str = ".";
 pub const DEFAULT_SOLUTION_FILTER: &'static str = "";
 
 pub const DEFAULT_DESTINATION_TEMPLATE: &'static str = "";
+
+pub const DEFAULT_TIMEOUT : i32 = 10;
