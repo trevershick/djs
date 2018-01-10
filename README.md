@@ -25,7 +25,7 @@ Usage
 ```djs -h``` output
 
 ```
-Jenkins Solution Downloader (jds) 0.2.0
+Jenkins Solution Downloader (jds) 0.3.0
 Trever Shick <trever.shick@tanium.com>
 Helps download solution XMLs from Jenkins
 
@@ -48,6 +48,7 @@ OPTIONS:
     -p, --project <Project Name>                            
     -s, --solution <SOLUTION>                               
     -S, --solution-filter <FILTER>                          
+    -t, --timeout <SECONDS>                                 Sets the timeout value for HTTP connections.
     -u, --url <Jenkins URL>                                 
 ```
 

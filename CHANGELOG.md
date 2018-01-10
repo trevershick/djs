@@ -2,7 +2,18 @@
 
 ## [Unreleased](https://github.com/trevershick/djs/tree/HEAD)
 
-[Full Changelog](https://github.com/trevershick/djs/compare/0.1.0...HEAD)
+[Full Changelog](https://github.com/trevershick/djs/compare/0.2.0...HEAD)
+
+**Fixed bugs:**
+
+- Abbreviated identifiers are not being added to the output file name [\#2](https://github.com/trevershick/djs/issues/2)
+
+**Merged pull requests:**
+
+- Adds timeout and fixes missing abbreviation [\#7](https://github.com/trevershick/djs/pull/7) ([trevershick](https://github.com/trevershick))
+
+## [0.2.0](https://github.com/trevershick/djs/tree/0.2.0) (2017-12-31)
+[Full Changelog](https://github.com/trevershick/djs/compare/0.1.0...0.2.0)
 
 **Implemented enhancements:**
 

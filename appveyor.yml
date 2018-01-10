@@ -42,7 +42,7 @@ install:
 
 # ???
 build: false
-version: '0.2.0.{build}'
+version: '0.3.0.{build}'
 
 # Equivalent to Travis' `script` phase
 test_script:

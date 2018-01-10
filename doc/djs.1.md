@@ -1,4 +1,4 @@
-% djs(1) Version 0.2.0
+% djs(1) Version 0.3.0
 
 NAME
 ====
