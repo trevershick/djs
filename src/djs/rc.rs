@@ -46,7 +46,7 @@ pub fn configure_from_file(
     Ok(())
 }
 
-// Initializes an .jdsrc file in the current directory.
+// Initializes an .djsrc file in the current directory.
 //
 // If the file was created then the path is returned
 // If the file wasn't created then an error is returned.

@@ -47,7 +47,7 @@ pub fn configure_from_cli(config: Rc<RefCell<Config>>, opts: &ArgMatches) -> Res
 }
 
 pub fn build_cli() -> App<'static, 'static> {
-    let app = App::new("Jenkins Solution Downloader (jds)")
+    let app = App::new("Jenkins Solution Downloader (djs)")
         .version(crate_version!())
         .author("Trever Shick <trever.shick@tanium.com>")
         .about("Helps download solution XMLs from Jenkins")
