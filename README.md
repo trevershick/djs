@@ -124,7 +124,7 @@ The only way to install at this time is via a homebrew tap (unless you want to c
 
 ```
 brew tap trevershick/djs https://github.com/trevershick/djs.git
-brew install trevershick/djs
+brew install trevershick/djs/djs-bin
 ```
 
 To Do
