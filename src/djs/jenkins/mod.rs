@@ -58,6 +58,33 @@ fn successful_response_only(it: reqwest::Response) -> Result<reqwest::Response, 
     }
 }
 
+fn remove_leading_slashes(s: String) -> String {
+    let mut idx = 0;
+    while idx < s.len() {
+        debug!(">>> value = {:?}", &s[idx..idx]);
+        if &s[idx..idx + 1] != "/" {
+            break;
+        }
+        idx = idx + 1;
+    }
+    return s[idx..s.len()].to_string();
+}
+
+fn remove_trailing_slashes(s: String) -> String {
+    let mut idx = s.len();
+    while idx > 0 {
+        if &s[idx - 1..idx] != "/" {
+            break;
+        }
+        idx = idx - 1;
+    }
+    return s[..idx].to_string();
+}
+
+fn remove_lt_slashes(s: String) -> String {
+    return remove_leading_slashes(remove_trailing_slashes(s));
+}
+
 impl Jenkins {
     pub fn new(config: Rc<RefCell<Config>>) -> Jenkins {
         Jenkins {
@@ -73,16 +100,18 @@ impl Jenkins {
         );
 
         let url = format!("{url}/{base}/job/{project}/job/{branch}/api/xml?depth=2&tree=builds[number,keepLog]&xpath=/*/build[keepLog=%22true%22][1]/number&wrapper=x",
-                url = get_c!(self,url),
-                base = get_c!(self,base),
-                project = get_c!(self,project),
-                branch = get_c!(self,branch));
+                          url = remove_trailing_slashes(get_c!(self,url)),
+                          base = remove_lt_slashes(get_c!(self,base)),
+                          project = remove_lt_slashes(get_c!(self,project)),
+                          branch = remove_lt_slashes(get_c!(self,branch)));
 
         debug!("  url={}", url);
 
-        get(url, &self.config.borrow()).and_then(&cdata_i32).map_err(|e| {
-            DjsError::step_failed("Unable to resolve the last \"keep forever\" build", e)
-        })
+        get(url, &self.config.borrow())
+            .and_then(&cdata_i32)
+            .map_err(|e| {
+                DjsError::step_failed("Unable to resolve the last \"keep forever\" build", e)
+            })
     }
 
     ///
@@ -96,10 +125,10 @@ impl Jenkins {
 
         format!(
             "{url}/{base}/job/{project}/job/{branch}/api/xml?xpath=/*/build/number&wrapper=x",
-            url = get_c!(self, url),
-            base = get_c!(self, base),
-            project = get_c!(self, project),
-            branch = get_c!(self, branch)
+            url = remove_trailing_slashes(get_c!(self, url)),
+            base = remove_lt_slashes(get_c!(self, base)),
+            project = remove_lt_slashes(get_c!(self, project)),
+            branch = remove_lt_slashes(get_c!(self, branch))
         )
     }
 
@@ -110,10 +139,10 @@ impl Jenkins {
         );
 
         format!("{url}/{base}/job/{project}/job/{branch}/lastSuccessfulBuild/api/xml?xpath=/*/number&wrapper=x",
-                url = get_c!(self,url),
-                base = get_c!(self,base),
-                project = get_c!(self,project),
-                branch = get_c!(self,branch))
+                url = remove_trailing_slashes(get_c!(self,url)),
+                base = remove_lt_slashes(get_c!(self,base)),
+                project = remove_lt_slashes(get_c!(self,project)),
+                branch = remove_lt_slashes(get_c!(self,branch)))
     }
 
     fn build_number_for_latest(&self) -> Result<i32, DjsError> {
@@ -132,9 +161,11 @@ impl Jenkins {
         );
         let url = self.build_number_for_last_successful_url();
 
-        get(url, &self.config.borrow()).and_then(&cdata_i32).map_err(|e: DjsError| {
-            DjsError::step_failed("Unable to resolve the last successful build", e)
-        })
+        get(url, &self.config.borrow())
+            .and_then(&cdata_i32)
+            .map_err(|e: DjsError| {
+                DjsError::step_failed("Unable to resolve the last successful build", e)
+            })
     }
 
     fn find_artifact_path_url(&self, build_num: i32) -> String {
@@ -186,7 +217,10 @@ impl Jenkins {
         let mut src = self.config.borrow().build.source();
         src = format!("jenkins, was {} from {}", old_build_number, src);
 
-        self.config.borrow_mut().resolved_build.set(bn.to_string(), src);
+        self.config
+            .borrow_mut()
+            .resolved_build
+            .set(bn.to_string(), src);
     }
 
     pub fn resolve_download_url(&mut self) -> Result<String, DjsError> {
@@ -256,7 +290,32 @@ impl Jenkins {
             _ => self.build_number_from_build().and_then(|bn| {
                 self.update_build_with(bn);
                 Ok(bn)
-            })
+            }),
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn remove_trailing_slashes() {
+        use super::*;
+        assert_eq!(
+            "http://noslash",
+            remove_trailing_slashes(s!("http://noslash//"))
+        );
+    }
+
+    #[test]
+    fn remove_leading_slashes() {
+        use super::*;
+        assert_eq!("noslash", remove_leading_slashes(s!("/noslash")));
+    }
+
+    #[test]
+    fn remove_lt_slashes() {
+        use super::*;
+        assert_eq!("noslash", remove_lt_slashes(s!("/noslash/")));
+    }
+
 }
