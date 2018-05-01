@@ -9,7 +9,12 @@ use djs::mediator::Mediator;
 use std::time::Duration;
 use djs::config::Config;
 
-pub fn download(url: &str, fname: &str, config: &Config, mediator: &mut Mediator) -> Result<(), DjsError> {
+pub fn download(
+    url: &str,
+    fname: &str,
+    config: &Config,
+    mediator: &mut Mediator,
+) -> Result<(), DjsError> {
     // parse url
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(config.timeout_in_seconds.get() as u64))

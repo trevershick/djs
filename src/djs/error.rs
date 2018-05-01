@@ -10,7 +10,7 @@ pub enum DjsError {
     InvalidConfig(String, String, String),
     HttpError(reqwest::Error),
     HttpRequestFailed(String, String),
-    XmlContentError(String,String /*bad value*/),
+    XmlContentError(String, String /*bad value*/),
     // solution, url
     ArtifactNotFound(String, String),
     EmptyContentError,

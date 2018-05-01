@@ -1,10 +1,14 @@
+#[macro_use]
+extern crate clap;
 extern crate console;
 extern crate env_logger;
+#[macro_use]
+extern crate log;
 extern crate reqwest;
-#[macro_use] extern crate clap;
-#[macro_use] extern crate log;
-#[macro_use] extern crate serde_derive;
-#[macro_use] mod djs;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+mod djs;
 
 use std::rc::Rc;
 use std::path::Path;
@@ -125,7 +129,12 @@ fn main() {
         if !config.borrow().dry_run.get() {
             let destination_path = config.borrow().destination_path();
 
-            download(url.as_str(), destination_path.as_str(), &config.borrow(), &mut mediator)
+            download(
+                url.as_str(),
+                destination_path.as_str(),
+                &config.borrow(),
+                &mut mediator,
+            )
         } else {
             mediator.print(format!("Dry Run, not downloading the file."));
             Ok(())

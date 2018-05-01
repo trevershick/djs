@@ -2,7 +2,6 @@ extern crate strfmt;
 #[allow(unused_imports)]
 extern crate url;
 
-
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -33,7 +32,7 @@ pub struct Config {
     pub dry_run: ConfigValue<bool>,
     pub verbose: ConfigValue<bool>,
     pub quiet: ConfigValue<bool>,
-    pub timeout_in_seconds: ConfigValue<i32>
+    pub timeout_in_seconds: ConfigValue<i32>,
 }
 
 #[derive(Debug, Clone)]
@@ -519,7 +518,10 @@ mod tests {
         fn default_format() {
             let mut c = config!();
             set_c!(c, resolved_build, "77");
-            assert_eq!(c.destination_path().as_str(), "./myproject-master-77-ls.xml");
+            assert_eq!(
+                c.destination_path().as_str(),
+                "./myproject-master-77-ls.xml"
+            );
         }
 
         #[test]

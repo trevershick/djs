@@ -29,10 +29,7 @@ impl XmlCollection {
 pub fn cdata_i32<'de, R: Read>(r: R) -> Result<i32, DjsError> {
     cdata_string(r).and_then(|it| {
         it.parse::<i32>().map_err(|_| {
-            DjsError::XmlContentError(
-                "Unable to convert to a number.".to_string(),
-                it
-            )
+            DjsError::XmlContentError("Unable to convert to a number.".to_string(), it)
         })
     })
 }
@@ -47,11 +44,10 @@ pub fn cdata_string<'de, R: Read>(r: R) -> Result<String, DjsError> {
         Ok(x) => x.ok_or(DjsError::EmptyContentError),
         Err(_) => Err(DjsError::XmlContentError(
             "Couldn't extract element from list.".to_string(),
-            s!("<empty collection>")
+            s!("<empty collection>"),
         )),
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -65,8 +61,8 @@ mod tests {
                 <number>337</number>
             </x>"##;
 
-           let actual = cdata_string(str.as_bytes()).expect("Should return a value");
-           assert_eq!(actual, "333");
+            let actual = cdata_string(str.as_bytes()).expect("Should return a value");
+            assert_eq!(actual, "333");
         }
 
         #[test]
@@ -76,11 +72,10 @@ mod tests {
 
             match cdata_string(str.as_bytes()) {
                 Err(DjsError::EmptyContentError) => (),
-                _ => panic!("should throw an EmptyContentError")
+                _ => panic!("should throw an EmptyContentError"),
             };
         }
     }
-
 
     mod cdata_i32 {
         use super::super::*;
@@ -92,8 +87,8 @@ mod tests {
                 <number>337</number>
             </x>"##;
 
-           let actual = cdata_i32(str.as_bytes()).expect("Should return a value");
-           assert_eq!(actual, 333);
+            let actual = cdata_i32(str.as_bytes()).expect("Should return a value");
+            assert_eq!(actual, 333);
         }
         #[test]
         fn returns_xmlcontenterror_when_not_parseable() {
@@ -103,11 +98,11 @@ mod tests {
             </x>"##;
 
             match cdata_i32(str.as_bytes()) {
-                Err(DjsError::XmlContentError(m,v)) => {
+                Err(DjsError::XmlContentError(m, v)) => {
                     assert_eq!(m, "Unable to convert to a number.");
                     assert_eq!(v, "not a number");
-                },
-                _ => panic!("should throw an EmptyContentError")
+                }
+                _ => panic!("should throw an EmptyContentError"),
             };
         }
         #[test]
@@ -117,7 +112,7 @@ mod tests {
 
             match cdata_i32(str.as_bytes()) {
                 Err(DjsError::EmptyContentError) => (),
-                _ => panic!("should throw an EmptyContentError")
+                _ => panic!("should throw an EmptyContentError"),
             };
         }
     }

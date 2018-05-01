@@ -31,7 +31,7 @@ pub fn configure_from_cli(config: Rc<RefCell<Config>>, opts: &ArgMatches) -> Res
     if opts.is_present("timeout") {
         match opts.value_of("timeout").unwrap().parse::<i32>() {
             Ok(v) => c.timeout_in_seconds.set(v, String::from("cli")),
-            Err(_) => ()
+            Err(_) => (),
         }
     }
     if opts.is_present("dry_run") {
