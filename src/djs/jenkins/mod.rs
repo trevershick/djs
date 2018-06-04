@@ -244,7 +244,7 @@ impl Jenkins {
             base = get_c!(self, base),
             project = get_c!(self, project),
             branch = get_c!(self, branch),
-            build = get_c!(self, build),
+            build = get_c!(self, resolved_build),
             a = rel_path
         );
         debug!("Resolved URL is {}", tmp);
