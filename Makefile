@@ -2,7 +2,7 @@ TEST_EXE=$(shell ls -tcS target/debug/djs-* 2>/dev/null | head -n1)
 
 PROJECT_ROOT = $(shell pwd)
 RBENV=$(shell which rbenv)
-CHANGELOG_GENERATOR = $(shell which github_changelog_generator)
+CHANGELOG_GENERATOR = docker run -it --rm -v "$(pwd)":/usr/local/src/your-app ferrarimarco/github-changelog-generator trevershick/djs
 KCOV=../kcov/build/src/Release/kcov
 
 DEBUG_EXE=target/debug/djs
@@ -44,4 +44,4 @@ doc: $(DEBUG_EXE) CHANGELOG.md
 changelog: $(CHANGELOG.md)
 
 CHANGELOG.md: $(SRC)
-	github_changelog_generator
+	$(CHANGELOG_GENERATOR)

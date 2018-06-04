@@ -25,7 +25,7 @@ Usage
 ```djs -h``` output
 
 ```
-Jenkins Solution Downloader (djs) 0.3.0
+Jenkins Solution Downloader (djs) 0.4.0
 Trever Shick <trever.shick@tanium.com>
 Helps download solution XMLs from Jenkins
 
@@ -124,7 +124,7 @@ The only way to install at this time is via a homebrew tap (unless you want to c
 
 ```
 brew tap trevershick/djs https://github.com/trevershick/djs.git
-brew install trevershick/djs/djs-bin
+brew install trevershick/djs
 ```
 
 To Do

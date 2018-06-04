@@ -1,5 +1,18 @@
 # Change Log
 
+## [Unreleased](https://github.com/trevershick/djs/tree/HEAD)
+
+[Full Changelog](https://github.com/trevershick/djs/compare/0.3.0...HEAD)
+
+**Closed issues:**
+
+- Add Windows support [\#11](https://github.com/trevershick/djs/issues/11)
+- Getting double slashes \(//\) with the default djsrc configuration [\#9](https://github.com/trevershick/djs/issues/9)
+
+**Merged pull requests:**
+
+- Update README with trevershick/djs/djs-bin for brew install [\#12](https://github.com/trevershick/djs/pull/12) ([brownms](https://github.com/brownms))
+
 ## [0.3.0](https://github.com/trevershick/djs/tree/0.3.0) (2018-01-10)
 [Full Changelog](https://github.com/trevershick/djs/compare/0.2.0...0.3.0)
 
