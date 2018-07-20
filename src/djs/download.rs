@@ -1,6 +1,7 @@
 use console::style;
 
 use reqwest;
+use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -53,7 +54,11 @@ pub fn download(
 
         mediator.print(format!("Saving to: {}", style(fname).green()));
 
-        mediator.start_progress(fname, ct_len);
+        let dp = Path::new(fname);
+        let file_name = dp.file_name().unwrap();
+        mediator.print(format!("File: {}", style(file_name.to_str().unwrap()).green()));
+
+        mediator.start_progress(file_name.to_str().unwrap(), ct_len);
 
         let mut file = File::create(fname)
             .map_err(|e| DjsError::download_failure(url, fname, Box::new(e)))

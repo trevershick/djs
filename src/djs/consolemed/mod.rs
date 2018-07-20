@@ -3,6 +3,7 @@ use djs::mediator::Mediator;
 extern crate console;
 extern crate indicatif;
 
+use console::{Term};
 use console::style;
 use djs::config::Config;
 use self::indicatif::{HumanBytes, ProgressBar, ProgressStyle};
@@ -43,6 +44,7 @@ impl Mediator for ConsoleMediator {
         }
         println!("{}", style("done").green());
     }
+
     fn start_progress(&mut self, name: &str, total_value: Option<u64>) {
         if self.config.borrow().quiet.get() {
             return;
@@ -78,7 +80,10 @@ impl Mediator for ConsoleMediator {
 }
 
 fn create_progress_bar(msg: &str, total: Option<u64>) -> ProgressBar {
-    let bar = match total {
+    let w = Term::stdout().size().1 as usize;
+    let tot = if w < 100 { None } else { total };
+
+    let bar = match tot {
         Some(v) => {
             let bar = ProgressBar::new(v);
             bar.set_style(ProgressStyle::default_bar()
