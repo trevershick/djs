@@ -25,7 +25,7 @@ Usage
 ```djs -h``` output
 
 ```
-Jenkins Solution Downloader (djs) 0.4.0
+Jenkins Solution Downloader (djs) 0.5.0
 Trever Shick <trever.shick@tanium.com>
 Helps download solution XMLs from Jenkins
 
